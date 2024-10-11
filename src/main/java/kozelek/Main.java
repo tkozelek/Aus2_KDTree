@@ -2,6 +2,7 @@ package kozelek;
 
 import kozelek.data.GPS;
 import kozelek.data.Nehnutelnost;
+import kozelek.tree.KDTree;
 
 public class Main {
     public static void main(String[] args) {
