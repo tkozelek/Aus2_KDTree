@@ -1,6 +1,8 @@
 package kozelek.tree;
 
-public class KDTree<T> {
+import kozelek.data.objekt.Entity;
+
+public class KDTree<T extends Entity> {
     private Node<T> root;
 
     public void insert(T data) {

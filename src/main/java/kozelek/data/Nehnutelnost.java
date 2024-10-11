@@ -15,7 +15,6 @@ public class Nehnutelnost extends Entity implements IObject {
         this.description = description;
     }
 
-
     @Override
     public int getID() {
         return this.id;
