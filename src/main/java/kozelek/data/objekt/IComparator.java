@@ -1,5 +1,5 @@
 package kozelek.data.objekt;
 
 public interface IComparator<T> {
-    int compare(T other, int level);
+    int compare(Entity other, int level);
 }

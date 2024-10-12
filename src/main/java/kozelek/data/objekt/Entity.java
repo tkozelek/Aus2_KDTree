@@ -11,6 +11,16 @@ public class Entity implements HasBounds, IComparator<IObject> {
         this.bottomRight = bottomRight;
     }
 
+    public boolean equalsGPS(Entity other) {
+        if (this.topLeft.getX() != other.getTopLeft().getX() ||
+                this.topLeft.getY() != other.getTopLeft().getY() ||
+                this.bottomRight.getX() != other.getBottomRight().getX() ||
+                this.bottomRight.getY() != other.getBottomRight().getY()) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public GPS getTopLeft() {
         return this.topLeft;
@@ -37,12 +47,11 @@ public class Entity implements HasBounds, IComparator<IObject> {
     }
 
     @Override
-    public int compare(IObject other, int level) {
+    public int compare(Entity other, int level) {
         if (level % 2 == 0) {
-            // x
+            return Double.compare(this.topLeft.getX(), other.getTopLeft().getX());
         } else {
-            // y
+            return Double.compare(this.topLeft.getY(), other.getTopLeft().getY());
         }
-        return -1;
     }
 }
