@@ -2,31 +2,22 @@ package kozelek;
 
 import kozelek.data.GPS;
 import kozelek.data.Nehnutelnost;
+import kozelek.generator.Generator;
 import kozelek.tree.KDTree;
+import kozelek.tree.TreeWrapper;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        KDTree<Nehnutelnost> tree = new KDTree<>();
-        Random rand = new Random(1);
+        TreeWrapper<Nehnutelnost> tree = new TreeWrapper<>();
 
-        int x = 100;
-        int y = 100;
+        Generator<Nehnutelnost> generator = new Generator<>(tree, 100,100,0,0);
 
-        long startTime = System.nanoTime();
+        generator.generujData(0, 5000, Nehnutelnost.class);
 
-        for (int i = 0; i < 500000; i++) {
-            Nehnutelnost neh = new Nehnutelnost(i, i + " ahoj" ,new GPS(rand.nextInt(x), rand.nextInt(y)),
-                    new GPS(rand.nextInt(x), rand.nextInt(y)));
-            tree.insert(neh);
-        }
-
-        long endTime = System.nanoTime();
-
-        long elapsedTime = (endTime - startTime) / 1_000_000;
-        System.out.println("Insertion completed in " + elapsedTime + " milliseconds.");
-
-        System.out.println("ahoj");
+        ArrayList<Nehnutelnost> nehnutelnost = generator.vyhladajNehnutelnosti(5000);
+        System.out.println(nehnutelnost.size());
     }
 }

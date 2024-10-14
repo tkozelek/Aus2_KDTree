@@ -8,4 +8,5 @@ public interface IObject {
     int getID();
     String getDescription();
     //ArrayList<IObject> getObjects();
+    String toString();
 }

@@ -1,5 +1,6 @@
 package kozelek.tree;
 
+import kozelek.data.GPS;
 import kozelek.data.objekt.Entity;
 
 public class KDTree<T extends Entity> {
@@ -9,13 +10,40 @@ public class KDTree<T extends Entity> {
         this.root = new Node<>(null, 0);
     }
 
-    public void insert(T data) {
+    public void insert(T data, boolean isLeft) {
         Node<T> currentNode = root;
         while (true) {
-            currentNode = currentNode.getChildBasedOnCompare(data);
+            currentNode = currentNode.getOrCreateChildBasedOnCompare(data, isLeft);
             if (currentNode == null) {
                 break;
             }
+        }
+    }
+
+    public T find(T data, boolean isLeft) {
+        Node<T> currentNode = root;
+        while (true) {
+            Node<T> lastNode = currentNode;
+            currentNode = currentNode.getChildOnCompare(data, isLeft);
+            if (currentNode == null) {
+                return lastNode.getBoundObject();
+            }
+        }
+    }
+
+    public T findByCord(GPS gps, boolean isLeft) {
+        Node<T> currentNode = root;
+        while (true) {
+            currentNode = currentNode.getChildOnCompare(gps, isLeft);
+
+            if (currentNode == null) {
+                return null;
+            }
+
+            if (currentNode.equals(gps)) {
+                return currentNode.getBoundObject();
+            }
+
         }
     }
 }

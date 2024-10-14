@@ -1,5 +1,6 @@
 package kozelek.tree;
 
+import kozelek.data.GPS;
 import kozelek.data.objekt.Entity;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class Node<T extends Entity> {
         this.leftChild = null;
         this.rightChild = null;
         this.parent = parent;
+        this.duplicateList = new ArrayList<>();
     }
 
     public Node(Node<T> parent, int level) {
@@ -32,19 +34,19 @@ public class Node<T extends Entity> {
         this.duplicateList = new ArrayList<>();
     }
 
-    public Node<T> getChildBasedOnCompare(T other) {
+    public Node<T> getOrCreateChildBasedOnCompare(T other, boolean isLeft) {
         if (this.boundObject == null) {
             this.boundObject = other;
             return null;
         }
 
-        if (this.boundObject.compare(other, this.level) > 0) {
+        if (this.boundObject.compare(other, this.level, isLeft) > 0) {
             if (this.leftChild == null) {
                 this.leftChild = new Node<T>(other, this, level + 1);
                 return null;
             } else
                 return this.leftChild;
-        } else if (this.boundObject.compare(other, this.level) <= 0) {
+        } else if (this.boundObject.compare(other, this.level, isLeft) <= 0) {
             if (this.rightChild == null) {
                 this.rightChild = new Node<T>(other, this, level + 1);
                 return null;
@@ -57,10 +59,34 @@ public class Node<T extends Entity> {
         }
     }
 
+    public Node<T> getChildOnCompare(T other, boolean isLeft) {
+        if (this.boundObject.compare(other, this.level, isLeft) > 0) {
+            return this.leftChild;
+        } else if (this.boundObject.compare(other, this.level, isLeft) <= 0) {
+            return this.rightChild;
+        }
+        return null;
+    }
+
+    public Node<T> getChildOnCompare(GPS gps, boolean isLeft) {
+        if (this.boundObject.compare(gps, this.level, isLeft) > 0) {
+            return this.leftChild;
+        } else if (this.boundObject.compare(gps, this.level, isLeft) <= 0) {
+            return this.rightChild;
+        }
+        return null;
+    }
+
     public boolean equals (T other) {
         if (this.boundObject == null) return false;
 
         return this.boundObject.equals(other);
+    }
+
+    public boolean equals(GPS point) {
+        if (this.boundObject == null) return false;
+
+        return this.boundObject.equalsGPS(point);
     }
 
     public Node<T> getLeftChild() {

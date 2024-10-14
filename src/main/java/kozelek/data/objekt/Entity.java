@@ -2,7 +2,7 @@ package kozelek.data.objekt;
 
 import kozelek.data.GPS;
 
-public class Entity implements HasBounds, IComparator<IObject> {
+public class Entity implements HasBounds, IComparator<Entity> {
     private GPS topLeft;
     private GPS bottomRight;
 
@@ -11,14 +11,11 @@ public class Entity implements HasBounds, IComparator<IObject> {
         this.bottomRight = bottomRight;
     }
 
-    public boolean equalsGPS(Entity other) {
-        if (this.topLeft.getX() != other.getTopLeft().getX() ||
-                this.topLeft.getY() != other.getTopLeft().getY() ||
-                this.bottomRight.getX() != other.getBottomRight().getX() ||
-                this.bottomRight.getY() != other.getBottomRight().getY()) {
-            return false;
-        }
-        return true;
+    public boolean equalsGPS(GPS gps) {
+        return (this.topLeft.getX() == gps.getX() &&
+                this.topLeft.getY() == gps.getY()) ||
+                (this.bottomRight.getX() == gps.getX() &&
+                this.bottomRight.getY() == gps.getY());
     }
 
     @Override
@@ -47,11 +44,36 @@ public class Entity implements HasBounds, IComparator<IObject> {
     }
 
     @Override
-    public int compare(Entity other, int level) {
-        if (level % 2 == 0) {
-            return Double.compare(this.topLeft.getX(), other.getTopLeft().getX());
+    public int compare(Entity other, int level, boolean isLeft) {
+        if (isLeft) {
+            return switch (level % 2) {
+                case 0 -> Double.compare(this.topLeft.getX(), other.getTopLeft().getX());
+                case 1 -> Double.compare(this.topLeft.getY(), other.getTopLeft().getY());
+                default -> 0;
+            };
         } else {
-            return Double.compare(this.topLeft.getY(), other.getTopLeft().getY());
+            return switch (level % 2) {
+                case 0 -> Double.compare(this.bottomRight.getX(), other.getBottomRight().getX());
+                case 1 -> Double.compare(this.bottomRight.getY(), other.getBottomRight().getY());
+                default -> 0;
+            };
+        }
+    }
+
+    @Override
+    public int compare(GPS gps, int level, boolean isLeft) {
+        if (isLeft) {
+            return switch (level % 2) {
+                case 0 -> Double.compare(this.topLeft.getX(), gps.getX());
+                case 1 -> Double.compare(this.topLeft.getY(), gps.getY());
+                default -> 0;
+            };
+        } else {
+            return switch (level % 2) {
+                case 0 -> Double.compare(this.bottomRight.getX(), gps.getX());
+                case 1 -> Double.compare(this.bottomRight.getY(), gps.getY());
+                default -> 0;
+            };
         }
     }
 }

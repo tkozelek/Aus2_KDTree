@@ -25,6 +25,14 @@ public class Nehnutelnost extends Entity implements IObject {
         return this.description;
     }
 
+    @Override
+    public String toString() {
+        return "Nehnutelnost " +
+                "id=" + id +
+                ", description='" + description + '\'' +
+                " x = " + getTopLeft() + ", y = " + getBottomRight();
+    }
+
     public ArrayList<Parcela> getParcely() {
         return this.parcely;
     }
