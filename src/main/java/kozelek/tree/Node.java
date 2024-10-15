@@ -60,6 +60,8 @@ public class Node<T extends Entity> {
     }
 
     public Node<T> getChildOnCompare(T other, boolean isLeft) {
+        if (this.boundObject == null)
+            return null;
         if (this.boundObject.compare(other, this.level, isLeft) > 0) {
             return this.leftChild;
         } else if (this.boundObject.compare(other, this.level, isLeft) <= 0) {
@@ -69,6 +71,8 @@ public class Node<T extends Entity> {
     }
 
     public Node<T> getChildOnCompare(GPS gps, boolean isLeft) {
+        if (this.boundObject == null)
+            return null;
         if (this.boundObject.compare(gps, this.level, isLeft) > 0) {
             return this.leftChild;
         } else if (this.boundObject.compare(gps, this.level, isLeft) <= 0) {
