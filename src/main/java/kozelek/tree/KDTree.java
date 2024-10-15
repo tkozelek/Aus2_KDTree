@@ -34,16 +34,13 @@ public class KDTree<T extends Entity> {
     public T findByCord(GPS gps, boolean isLeft) {
         Node<T> currentNode = root;
         while (true) {
-            currentNode = currentNode.getChildOnCompare(gps, isLeft);
-
+            if (currentNode != null && currentNode.equals(gps)) {
+                return currentNode.getBoundObject();
+            }
             if (currentNode == null) {
                 return null;
             }
-
-            if (currentNode.equals(gps)) {
-                return currentNode.getBoundObject();
-            }
-
+            currentNode = currentNode.getChildOnCompare(gps, isLeft);
         }
     }
 }
