@@ -30,12 +30,5 @@ public class Nehnutelnost extends Entity {
         return this.parcely;
     }
 
-    @Override
-    public int compare(Entity other, int level) {
-        return switch (level % 2) {
-            case 0 -> Double.compare(this.getGPS().getX(), other.getGPS().getX());
-            case 1 -> Double.compare(this.getGPS().getY(), other.getGPS().getY());
-            default -> 0;
-        };
-    }
+
 }

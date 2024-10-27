@@ -24,4 +24,13 @@ public abstract class Entity implements HasBounds, IComparator<Entity> {
         return Double.compare(this.gps.getX(), other.getGPS().getX()) == 0 &&
                 Double.compare(this.gps.getY(), other.getGPS().getY()) == 0;
     }
+
+    @Override
+    public int compare(Entity other, int level) {
+        return switch (level % 2) {
+            case 0 -> Double.compare(this.getGPS().getX(), other.getGPS().getX());
+            case 1 -> Double.compare(this.getGPS().getY(), other.getGPS().getY());
+            default -> 0;
+        };
+    }
 }

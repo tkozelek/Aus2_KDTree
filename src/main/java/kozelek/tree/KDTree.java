@@ -53,6 +53,11 @@ public class KDTree<T extends Entity> {
             return boundObject;
         }
 
-    return null;
+        // level % 2 = 0 -> x
+        // level % 2 = 1 -> y
+        // hladame v pravom podstrome najmensiu danu suradnicu
+
+
+        return null;
     }
 }
