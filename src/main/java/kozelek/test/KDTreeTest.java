@@ -2,7 +2,7 @@ package kozelek.test;
 
 import kozelek.data.GPS;
 import kozelek.data.objekt.Entity;
-import kozelek.tree.TreeWrapper;
+import kozelek.tree.KDTree;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TreeWrapperTest {
 
-    private TreeWrapper<TestEntity> treeWrapper;
+    private KDTree<TestEntity> treeWrapper;
     private double x1,x2;
     private double y1,y2;
     private int pocet;
@@ -29,22 +29,21 @@ class TreeWrapperTest {
         this.y2 = 200;
         this.pocet = 5000;
 
-        this.treeWrapper = new TreeWrapper<>();
+        this.treeWrapper = new KDTree<>();
         this.testEntities = new ArrayList<>();
     }
 
     @BeforeEach
     void setUp() {
-        treeWrapper = new TreeWrapper<>();
+        treeWrapper = new KDTree<>();
         testEntities = new ArrayList<>();
         this.rand = new Random();
     }
 
     private TestEntity createRandomObject() {
-        GPS tl = new GPS(this.randomX(), this.randomY());
-        GPS br = new GPS(this.randomX(), this.randomY());
+        GPS gps = new GPS(this.randomX(), this.randomY());
 
-        return new TestEntity(tl, br);
+        return new TestEntity(gps);
     }
 
     public double randomX() {
@@ -65,15 +64,14 @@ class TreeWrapperTest {
 
         for (int j = 0; j < pocet; j++) {
             TestEntity test = this.testEntities.get(rand.nextInt(this.testEntities.size()));
-            boolean isLeft = rand.nextBoolean();
-            GPS gps = isLeft ? test.getTopLeft() : test.getBottomRight();
-            TestEntity found = treeWrapper.find(gps, isLeft);
+
+            TestEntity found = treeWrapper.find(test);
 
             assertNotNull(found);
             assertEquals(test, found);
         }
 
-        TestEntity notFound = treeWrapper.find(new GPS(x2 + 5, y2 + 5), true);
+        TestEntity notFound = treeWrapper.find(new TestEntity(new GPS(x2 + 5, x1 + 5)));
         assertNull(notFound);
     }
 
@@ -87,21 +85,17 @@ class TreeWrapperTest {
                 treeWrapper.insert(test);
                 testEntities.add(test);
 
-                TestEntity testfind = treeWrapper.find(test.getTopLeft(), true);
-                TestEntity testfindbr = treeWrapper.find(test.getBottomRight(), false);
+                TestEntity testfind = treeWrapper.find(test);
 
-                if (testfind == null || testfindbr == null)
+                if (testfind == null)
                     fail();
 
                 foundList.add(testfind);
-                foundListbr.add(testfindbr);
-
             } else {
                 if (!testEntities.isEmpty()) {
                     TestEntity test = this.testEntities.get(rand.nextInt(this.testEntities.size()));
-                    boolean isLeft = rand.nextBoolean();
-                    GPS gps = isLeft ? test.getTopLeft() : test.getBottomRight();
-                    TestEntity found = treeWrapper.find(gps, isLeft);
+
+                    TestEntity found = treeWrapper.find(test);
 
                     assertNotNull(found);
                     assertEquals(test, found);
@@ -118,8 +112,13 @@ class TreeWrapperTest {
     }
 
     static class TestEntity extends Entity {
-        public TestEntity(GPS topLeft, GPS bottomRight) {
-            super(topLeft, bottomRight);
+        public TestEntity(GPS gps) {
+            super(gps);
+        }
+
+        @Override
+        public int compare(Entity other, int level) {
+            return 0;
         }
     }
 }

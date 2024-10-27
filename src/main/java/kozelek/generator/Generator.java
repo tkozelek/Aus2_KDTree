@@ -4,14 +4,15 @@ import kozelek.data.GPS;
 import kozelek.data.Nehnutelnost;
 import kozelek.data.Parcela;
 import kozelek.data.objekt.Entity;
-import kozelek.tree.TreeWrapper;
+import kozelek.data.objekt.IComparator;
+import kozelek.data.objekt.IObject;
+import kozelek.tree.KDTree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Random;
 
 public class Generator<T extends Entity> {
-    private TreeWrapper<T> tree;
+    private KDTree<T> tree;
     private Random rand;
     private double x1, x2;
     private double y1, y2;
@@ -19,7 +20,7 @@ public class Generator<T extends Entity> {
     private double minx, miny;
     private ArrayList<T> entities;
 
-    public Generator(TreeWrapper<T> tree, double maxx, double maxy, double minx, double miny) {
+    public Generator(KDTree<T> tree, double maxx, double maxy, double minx, double miny) {
         this.tree = tree;
 
         this.rand = new Random();
@@ -46,15 +47,14 @@ public class Generator<T extends Entity> {
 
     public ArrayList<T> generujData(int start, int pocet, Class<? extends Entity> clazz) {
         for (int i = start; i <= pocet + start; i++) {
-            GPS tl = new GPS(this.randomX(), this.randomY());
-            GPS br = new GPS(this.randomX(), this.randomY());
+            GPS gps = new GPS(this.randomX(), this.randomY());
 
             Entity e;
             if (clazz.equals(Nehnutelnost.class)) {
-                e = new Nehnutelnost(i, "Nehnutelnost s cislom " + i, tl, br);
+                e = new Nehnutelnost(i, "Nehnutelnost s cislom " + i, gps);
                 this.tree.insert((T) e);
             } else {
-                e = new Parcela(i, "Parcela s cislom " + i, tl, br);
+                e = new Parcela(i, "Parcela s cislom " + i, gps);
                 this.tree.insert((T) e);
             }
             this.entities.add((T) e);
@@ -74,37 +74,15 @@ public class Generator<T extends Entity> {
         int count = 0;
 
         for (int i = 0; i < pocetOperacii; i++) {
-            boolean isLeft = rand.nextBoolean();
             T entity;
             T random = this.entities.get(rand.nextInt(this.entities.size()));
-            GPS gps = isLeft ? random.getTopLeft() : random.getBottomRight();
-            entity = this.tree.find(gps, isLeft);
+            entity = this.tree.find(random);
 
             if (entity != null && entity.equals(random)) {
                 count++;
             } else {
                 return count;
             }
-        }
-        return count;
-    }
-
-    public int vyhladajRandom(int pocetOperacii) {
-        int count = 0;
-
-        for (int i = 0; i < pocetOperacii; i++) {
-            boolean isLeft = rand.nextBoolean();
-            T neh = null;
-            if (isLeft) {
-                neh = this.tree.find(this.randomGPS(), true);
-            } else {
-                neh = this.tree.find(this.randomGPS(), false);
-            }
-
-            if (neh != null) {
-                count++;
-            }
-
         }
         return count;
     }

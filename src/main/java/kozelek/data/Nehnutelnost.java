@@ -1,39 +1,41 @@
 package kozelek.data;
 
 import kozelek.data.objekt.Entity;
+import kozelek.data.objekt.IComparator;
 import kozelek.data.objekt.IObject;
 
 import java.util.ArrayList;
 
-public class Nehnutelnost extends Entity implements IObject {
+public class Nehnutelnost extends Entity {
+
+    private ArrayList<Parcela> parcely;
     private int id;
     private String description;
-    private ArrayList<Parcela> parcely;
-    public Nehnutelnost(int id, String description, GPS topLeft, GPS bottomRight) {
-        super(topLeft, bottomRight);
+
+    public Nehnutelnost(int id, String description, GPS gps) {
+        super(gps);
         this.id = id;
         this.description = description;
     }
 
     @Override
-    public int getID() {
-        return this.id;
-    }
-
-    @Override
-    public String getDescription() {
-        return this.description;
-    }
-
-    @Override
     public String toString() {
         return "Nehnutelnost " +
-                "id=" + id +
-                ", description='" + description + '\'' +
-                " x = " + getTopLeft() + ", y = " + getBottomRight();
+                "id=" + this.id +
+                ", description='" + this.description + '\'' +
+                " x = " + this.getGPS();
     }
 
     public ArrayList<Parcela> getParcely() {
         return this.parcely;
+    }
+
+    @Override
+    public int compare(Entity other, int level) {
+        return switch (level % 2) {
+            case 0 -> Double.compare(this.getGPS().getX(), other.getGPS().getX());
+            case 1 -> Double.compare(this.getGPS().getY(), other.getGPS().getY());
+            default -> 0;
+        };
     }
 }

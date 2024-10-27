@@ -2,6 +2,8 @@ package kozelek.tree;
 
 import kozelek.data.GPS;
 import kozelek.data.objekt.Entity;
+import kozelek.data.objekt.IComparator;
+import kozelek.data.objekt.IObject;
 
 public class KDTree<T extends Entity> {
     private Node<T> root;
@@ -10,37 +12,47 @@ public class KDTree<T extends Entity> {
         this.root = new Node<>(null, 0);
     }
 
-    public void insert(T data, boolean isLeft) {
+    public void insert(T data) {
         Node<T> currentNode = root;
         while (true) {
-            currentNode = currentNode.getOrCreateChildBasedOnCompare(data, isLeft);
+            currentNode = currentNode.getOrCreateChildBasedOnCompare(data);
             if (currentNode == null) {
                 break;
             }
         }
     }
 
-    public T find(T data, boolean isLeft) {
+    public T find(T data) {
+        return this.findNode(data).getBoundObject();
+    }
+
+    public Node<T> findNode(T data) {
         Node<T> currentNode = root;
+        if (currentNode.equals(data)) {
+            return currentNode;
+        }
         while (true) {
             Node<T> lastNode = currentNode;
-            currentNode = currentNode.getChildOnCompare(data, isLeft);
+            currentNode = currentNode.getChildOnCompare(data);
             if (currentNode == null) {
-                return lastNode.getBoundObject();
+                return lastNode.equals(data) ? lastNode : null;
+            } else {
+                if (currentNode.equals(data)) {
+                    return currentNode;
+                }
             }
         }
     }
 
-    public T findByCord(GPS gps, boolean isLeft) {
-        Node<T> currentNode = root;
-        while (true) {
-            if (currentNode != null && currentNode.equals(gps)) {
-                return currentNode.getBoundObject();
-            }
-            if (currentNode == null) {
-                return null;
-            }
-            currentNode = currentNode.getChildOnCompare(gps, isLeft);
+    public T delete(T data) {
+        Node<T> nodeToDelete = this.findNode(data);
+
+        if (nodeToDelete != null && nodeToDelete.isLeaft()) { // je listom
+            T boundObject = nodeToDelete.getBoundObject();
+            nodeToDelete = null;
+            return boundObject;
         }
+
+    return null;
     }
 }

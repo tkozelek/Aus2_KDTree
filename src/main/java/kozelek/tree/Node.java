@@ -2,6 +2,8 @@ package kozelek.tree;
 
 import kozelek.data.GPS;
 import kozelek.data.objekt.Entity;
+import kozelek.data.objekt.IComparator;
+import kozelek.data.objekt.IObject;
 
 import java.util.ArrayList;
 
@@ -11,8 +13,7 @@ public class Node<T extends Entity> {
     private Node<T> parent;
 
     private T boundObject;
-    private ArrayList<T> duplicateList;
-    private final int level;
+    private int level;
 
     public Node(T boundObject, Node<T> parent, int level) {
         this.level = level;
@@ -21,7 +22,6 @@ public class Node<T extends Entity> {
         this.leftChild = null;
         this.rightChild = null;
         this.parent = parent;
-        this.duplicateList = new ArrayList<>();
     }
 
     public Node(Node<T> parent, int level) {
@@ -30,23 +30,21 @@ public class Node<T extends Entity> {
         this.leftChild = null;
         this.rightChild = null;
         this.parent = parent;
-
-        this.duplicateList = new ArrayList<>();
     }
 
-    public Node<T> getOrCreateChildBasedOnCompare(T other, boolean isLeft) {
+    public Node<T> getOrCreateChildBasedOnCompare(T other) {
         if (this.boundObject == null) {
             this.boundObject = other;
             return null;
         }
 
-        if (this.boundObject.compare(other, this.level, isLeft) > 0) {
+        if (this.boundObject.compare(other, this.level) > 0) {
             if (this.leftChild == null) {
                 this.leftChild = new Node<T>(other, this, level + 1);
                 return null;
             } else
                 return this.leftChild;
-        } else if (this.boundObject.compare(other, this.level, isLeft) <= 0) {
+        } else if (this.boundObject.compare(other, this.level) <= 0) {
             if (this.rightChild == null) {
                 this.rightChild = new Node<T>(other, this, level + 1);
                 return null;
@@ -54,28 +52,16 @@ public class Node<T extends Entity> {
                 return this.rightChild;
             }
         } else {
-            this.duplicateList.add(other);
             return null;
         }
     }
 
-    public Node<T> getChildOnCompare(T other, boolean isLeft) {
+    public Node<T> getChildOnCompare(T data) { // traverse throught the tree
         if (this.boundObject == null)
             return null;
-        if (this.boundObject.compare(other, this.level, isLeft) > 0) {
+        if (this.boundObject.compare(data, this.level) > 0) {
             return this.leftChild;
-        } else if (this.boundObject.compare(other, this.level, isLeft) <= 0) {
-            return this.rightChild;
-        }
-        return null;
-    }
-
-    public Node<T> getChildOnCompare(GPS gps, boolean isLeft) {
-        if (this.boundObject == null)
-            return null;
-        if (this.boundObject.compare(gps, this.level, isLeft) > 0) {
-            return this.leftChild;
-        } else if (this.boundObject.compare(gps, this.level, isLeft) <= 0) {
+        } else if (this.boundObject.compare(data, this.level) <= 0) {
             return this.rightChild;
         }
         return null;
@@ -84,29 +70,58 @@ public class Node<T extends Entity> {
     public boolean equals (T other) {
         if (this.boundObject == null) return false;
 
-        return this.boundObject.equals(other);
+        return this.boundObject.equal(other);
     }
 
-    public boolean equals(GPS point) {
-        if (this.boundObject == null) return false;
-
-        return this.boundObject.equalsGPS(point);
+    public boolean isLeaft() {
+        return this.rightChild == null && this.leftChild == null;
     }
 
-    public Node<T> getLeftChild() {
-        return leftChild;
-    }
+    public void swapNodes(Node<T> other) {
+        // swap the bound objects
+        T tempBoundObject = this.boundObject;
+        this.boundObject = other.boundObject;
+        other.boundObject = tempBoundObject;
 
-    public Node<T> getRightChild() {
-        return rightChild;
-    }
+        // swap parent references
+        Node<T> tempParent = this.parent;
+        this.parent = other.parent;
+        other.parent = tempParent;
 
-    public Node<T> getParent() {
-        return parent;
-    }
+        // swap parent references
+        if (this.parent != null) {
+            if (this.parent.leftChild == other) {
+                this.parent.leftChild = this;
+            } else if (this.parent.rightChild == other) {
+                this.parent.rightChild = this;
+            }
+        }
+        if (other.parent != null) {
+            if (other.parent.leftChild == this) {
+                other.parent.leftChild = other;
+            } else if (other.parent.rightChild == this) {
+                other.parent.rightChild = other;
+            }
+        }
 
-    public int getLevel() {
-        return level;
+        // swap children
+        Node<T> tempLeftChild = this.leftChild;
+        Node<T> tempRightChild = this.rightChild;
+        this.leftChild = other.leftChild;
+        this.rightChild = other.rightChild;
+        other.leftChild = tempLeftChild;
+        other.rightChild = tempRightChild;
+
+        // update children parent references
+        if (this.leftChild != null) this.leftChild.parent = this;
+        if (this.rightChild != null) this.rightChild.parent = this;
+        if (other.leftChild != null) other.leftChild.parent = other;
+        if (other.rightChild != null) other.rightChild.parent = other;
+
+        // swap levels
+        int tempLevel = this.level;
+        this.level = other.level;
+        other.level = tempLevel;
     }
 
     public T getBoundObject() {
