@@ -7,11 +7,12 @@ import kozelek.data.objekt.Entity;
 import kozelek.data.objekt.IComparator;
 import kozelek.data.objekt.IObject;
 import kozelek.tree.KDTree;
+import kozelek.tree.Node;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Generator<T extends Entity> {
+public class Generator<T extends IComparator<T>> {
     private KDTree<T> tree;
     private Random rand;
     private double x1, x2;
@@ -29,6 +30,10 @@ public class Generator<T extends Entity> {
         this.minx = minx;
         this.miny = miny;
         this.entities = new ArrayList<>();
+    }
+
+    public Node<T> getKoren() {
+        return this.tree.getRoot();
     }
 
     public void setSeed(long seed) { this.rand.setSeed(seed); }
@@ -85,6 +90,37 @@ public class Generator<T extends Entity> {
             }
         }
         return count;
+    }
+
+    public int vymaz(int pocetOperacii) {
+        int count = 0;
+        for (int i = 0; i < pocetOperacii; i++) {
+            T entity;
+            T random = this.entities.remove(rand.nextInt(this.entities.size()));
+
+            entity = this.tree.delete(random);
+
+
+            if (entity != null && entity.equals(random)) {
+                count++;
+            } else {
+                return count;
+            }
+        }
+        return count;
+    }
+
+    public void edit(int pocetOperacii) {
+        for (int i = 0; i < pocetOperacii; i++) {
+            T random = this.entities.remove(rand.nextInt(this.entities.size()));
+            T rand = null;
+            if (random instanceof Nehnutelnost)
+                rand = (T) new Nehnutelnost(555555,"aasdasd", this.randomGPS());
+            else if (random instanceof Parcela)
+                rand = (T) new Parcela(555555,"aasdasd", this.randomGPS());
+            this.entities.add(rand);
+            this.tree.edit(random, rand);
+        }
     }
 
     public void clear() {

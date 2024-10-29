@@ -1,11 +1,15 @@
 package kozelek.tree;
 
 import kozelek.data.GPS;
+import kozelek.data.objekt.Editable;
 import kozelek.data.objekt.Entity;
 import kozelek.data.objekt.IComparator;
 import kozelek.data.objekt.IObject;
 
-public class KDTree<T extends Entity> {
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class KDTree<T extends IComparator<T>> {
     private Node<T> root;
 
     public KDTree() {
@@ -23,7 +27,11 @@ public class KDTree<T extends Entity> {
     }
 
     public T find(T data) {
-        return this.findNode(data).getBoundObject();
+        Node<T> found = this.findNode(data);
+        if (found != null) {
+            return found.getBoundObject();
+        }
+        return null;
     }
 
     public Node<T> findNode(T data) {
@@ -47,17 +55,98 @@ public class KDTree<T extends Entity> {
     public T delete(T data) {
         Node<T> nodeToDelete = this.findNode(data);
 
-        if (nodeToDelete != null && nodeToDelete.isLeaft()) { // je listom
-            T boundObject = nodeToDelete.getBoundObject();
-            nodeToDelete = null;
+        if (nodeToDelete == null)
+            return null; // neexistuje
+
+        T boundObject = nodeToDelete.getBoundObject();
+
+        if (nodeToDelete.isLeaf()) { // je listom
+            nodeToDelete.removeFromParent();
             return boundObject;
         }
 
         // level % 2 = 0 -> x
         // level % 2 = 1 -> y
         // hladame v pravom podstrome najmensiu danu suradnicu
+        Node<T> replacement = null;
+        while (!nodeToDelete.isLeaf()) {
+            if (nodeToDelete.getRightChild() != null)
+                replacement = this.findMinNodeInSubtree(nodeToDelete.getRightChild(), nodeToDelete.getLevel());
+            else
+                replacement = this.findBigNodeInSubtree(nodeToDelete.getLeftChild(), nodeToDelete.getLevel());
+//            if (!replacement.isLeaf()) {
+//                System.out.println("nie je");
+//            }
+            if (nodeToDelete.equals(this.root)) {
+                this.root = replacement;
+            }
+            nodeToDelete.swapNodes(replacement);
+        }
+        nodeToDelete.removeFromParent();
+        nodeToDelete = null;
+        return boundObject;
+    }
 
+    public Node<T> findMinNodeInSubtree(Node<T> startNode, int level) {
+        Node<T> minNode = startNode;
+        Queue<Node<T>> nodesToCheck = new LinkedList<>();
+        nodesToCheck.add(startNode);
 
-        return null;
+        while (!nodesToCheck.isEmpty()) {
+            Node<T> currentNode = nodesToCheck.poll();
+
+            if (currentNode.getBoundObject().compare(minNode.getBoundObject(), level) <= 0) {
+                minNode = currentNode;
+            }
+
+            if (level % startNode.getBoundObject().getDimension() ==
+                    currentNode.getLevel() % currentNode.getBoundObject().getDimension()) {
+                if (currentNode.getLeftChild() != null) nodesToCheck.add(currentNode.getLeftChild());
+            } else {
+                if (currentNode.getLeftChild() != null) nodesToCheck.add(currentNode.getLeftChild());
+                if (currentNode.getRightChild() != null) nodesToCheck.add(currentNode.getRightChild());
+            }
+        }
+
+        return minNode;
+    }
+
+    public Node<T> findBigNodeInSubtree(Node<T> startNode, int level) {
+        Node<T> minNode = startNode;
+        Queue<Node<T>> nodesToCheck = new LinkedList<>();
+        nodesToCheck.add(startNode);
+
+        while (!nodesToCheck.isEmpty()) {
+            Node<T> currentNode = nodesToCheck.poll();
+
+            if (currentNode.getBoundObject().compare(minNode.getBoundObject(), level) >= 0) {
+                minNode = currentNode;
+            }
+
+            if (level % startNode.getBoundObject().getDimension() ==
+                    currentNode.getLevel() % currentNode.getBoundObject().getDimension()) {
+                if (currentNode.getRightChild() != null) nodesToCheck.add(currentNode.getRightChild());
+            } else {
+                if (currentNode.getLeftChild() != null) nodesToCheck.add(currentNode.getLeftChild());
+                if (currentNode.getRightChild() != null) nodesToCheck.add(currentNode.getRightChild());
+            }
+
+        }
+
+        return minNode;
+    }
+
+    public void edit(T data, T dataNew) {
+        Node<T> currentNode = this.findNode(data);
+        if (data.equal(dataNew)) {
+            currentNode.editBoundObjectData(dataNew);
+        } else {
+            this.delete(data);
+            this.insert(dataNew);
+        }
+    }
+
+    public Node<T> getRoot() {
+        return root;
     }
 }

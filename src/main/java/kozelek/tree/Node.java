@@ -7,7 +7,7 @@ import kozelek.data.objekt.IObject;
 
 import java.util.ArrayList;
 
-public class Node<T extends Entity> {
+public class Node<T extends IComparator<T>> {
     private Node<T> leftChild;
     private Node<T> rightChild;
     private Node<T> parent;
@@ -73,16 +73,21 @@ public class Node<T extends Entity> {
         return this.boundObject.equal(other);
     }
 
-    public boolean isLeaft() {
+    public boolean isLeaf() {
         return this.rightChild == null && this.leftChild == null;
     }
 
-    public void swapNodes(Node<T> other) {
-        // swap the bound objects
-        T tempBoundObject = this.boundObject;
-        this.boundObject = other.boundObject;
-        other.boundObject = tempBoundObject;
+    public void removeFromParent() {
+        if (this.parent != null) {
+            if (this == this.parent.leftChild) {
+                this.parent.leftChild = null;
+            } else {
+                this.parent.rightChild = null;
+            }
+        }
+    }
 
+    public void swapNodes(Node<T> other) {
         // swap parent references
         Node<T> tempParent = this.parent;
         this.parent = other.parent;
@@ -126,5 +131,25 @@ public class Node<T extends Entity> {
 
     public T getBoundObject() {
         return boundObject;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public Node<T> getLeftChild() {
+        return leftChild;
+    }
+
+    public Node<T> getRightChild() {
+        return rightChild;
+    }
+
+    public Node<T> getParent() {
+        return parent;
+    }
+
+    public void editBoundObjectData(T dataNew) { // only if comparable stuff is the same
+        this.boundObject = dataNew;
     }
 }

@@ -2,6 +2,7 @@ package kozelek.test;
 
 import kozelek.data.GPS;
 import kozelek.data.objekt.Entity;
+import kozelek.data.objekt.IComparator;
 import kozelek.tree.KDTree;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -111,13 +112,23 @@ class TreeWrapperTest {
         }
     }
 
-    static class TestEntity extends Entity {
+    static class TestEntity extends Entity implements IComparator<TestEntity> {
         public TestEntity(GPS gps) {
             super(gps);
         }
 
         @Override
-        public int compare(Entity other, int level) {
+        public int compare(TestEntity other, int level) {
+            return 0;
+        }
+
+        @Override
+        public boolean equal(TestEntity other) {
+            return false;
+        }
+
+        @Override
+        public int getDimension() {
             return 0;
         }
     }
