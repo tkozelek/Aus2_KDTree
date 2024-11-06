@@ -7,10 +7,11 @@ import kozelek.data.objekt.IObject;
 
 import java.util.ArrayList;
 
-public class Node<T extends IComparator<T>> {
+public class Node<T extends IObject> {
     private Node<T> leftChild;
     private Node<T> rightChild;
     private Node<T> parent;
+
 
     private T boundObject;
     private int level;
@@ -38,30 +39,29 @@ public class Node<T extends IComparator<T>> {
             return null;
         }
 
-        if (this.boundObject.compare(other, this.level) > 0) {
+        if (this.boundObject.compare(other, this.level) >= 0) {
             if (this.leftChild == null) {
                 this.leftChild = new Node<T>(other, this, level + 1);
                 return null;
             } else
                 return this.leftChild;
-        } else if (this.boundObject.compare(other, this.level) <= 0) {
+        } else if (this.boundObject.compare(other, this.level) < 0) {
             if (this.rightChild == null) {
                 this.rightChild = new Node<T>(other, this, level + 1);
                 return null;
             } else {
                 return this.rightChild;
             }
-        } else {
-            return null;
         }
+        return null;
     }
 
     public Node<T> getChildOnCompare(T data) { // traverse throught the tree
         if (this.boundObject == null)
             return null;
-        if (this.boundObject.compare(data, this.level) > 0) {
+        if (this.boundObject.compare(data, this.level) >= 0) {
             return this.leftChild;
-        } else if (this.boundObject.compare(data, this.level) <= 0) {
+        } else if (this.boundObject.compare(data, this.level) < 0) {
             return this.rightChild;
         }
         return null;
@@ -70,7 +70,13 @@ public class Node<T extends IComparator<T>> {
     public boolean equals (T other) {
         if (this.boundObject == null) return false;
 
-        return this.boundObject.equal(other);
+        return this.boundObject.equalKey(other);
+    }
+
+    public boolean equalsId(T other) {
+        if (this.boundObject == null) return false;
+
+        return this.boundObject.equalUUID(other);
     }
 
     public boolean isLeaf() {
@@ -149,7 +155,12 @@ public class Node<T extends IComparator<T>> {
         return parent;
     }
 
-    public void editBoundObjectData(T dataNew) { // only if comparable stuff is the same
+    public void editBoundObjectData(T dataNew) { // only if key is the same
         this.boundObject = dataNew;
+    }
+
+    @Override
+    public String toString() {
+        return "NboundObject=" + boundObject;
     }
 }

@@ -4,7 +4,7 @@ import kozelek.data.GPS;
 import kozelek.data.Nehnutelnost;
 import kozelek.data.Parcela;
 import kozelek.data.objekt.Entity;
-import kozelek.data.objekt.IComparator;
+import kozelek.data.objekt.GPSObjekt;
 import kozelek.data.objekt.IObject;
 import kozelek.tree.KDTree;
 import kozelek.tree.Node;
@@ -12,11 +12,9 @@ import kozelek.tree.Node;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Generator<T extends IComparator<T>> {
+public class Generator<T extends IObject> {
     private KDTree<T> tree;
     private Random rand;
-    private double x1, x2;
-    private double y1, y2;
     private double maxx, maxy;
     private double minx, miny;
     private ArrayList<T> entities;
@@ -39,69 +37,158 @@ public class Generator<T extends IComparator<T>> {
     public void setSeed(long seed) { this.rand.setSeed(seed); }
 
     public double randomX() {
-        return this.rand.nextDouble(this.minx, this.maxx);
+        return (this.minx + (this.maxx - this.minx) * this.rand.nextDouble());
     } // (this.x1 + (this.x2 - this.x1) * this.rand.nextDouble());
 
     public double randomY() {
-        return this.rand.nextDouble(this.miny, this.maxy);
+        return (this.miny + (this.maxy - this.miny) * this.rand.nextDouble());
     } // return (this.y1 + (this.y2 - this.y1) * this.rand.nextDouble());
 
     public GPS randomGPS() {
         return new GPS(this.randomX(), this.randomY());
     }
 
-    public ArrayList<T> generujData(int start, int pocet, Class<? extends Entity> clazz) {
-        for (int i = start; i <= pocet + start; i++) {
-            GPS gps = new GPS(this.randomX(), this.randomY());
+    public T getRandomEntity() {
+        return this.entities.get(this.rand.nextInt(this.entities.size()));
+    }
+
+    public ArrayList<T> generujData(int start, int pocet, Class<? extends IObject> clazz, double duplicate) {
+        for (int i = start; i < pocet + start; i++) {
+            double rand = this.rand.nextDouble();
+            GPS gps1 = this.randomGPS();
+            GPS gps2 = this.randomGPS();
+            if (!entities.isEmpty() && rand < duplicate) {
+                T entity = this.getRandomEntity();
+                if (entity instanceof Entity) {
+                    if (this.rand.nextBoolean())
+                        gps1 = ((Entity) entity).getGPS();
+                    else
+                        gps2 = ((Entity) entity).getGPS();
+                }
+            }
 
             Entity e;
+            Entity e2;
             if (clazz.equals(Nehnutelnost.class)) {
-                e = new Nehnutelnost(i, "Nehnutelnost s cislom " + i, gps);
+                e = new Nehnutelnost(i, "Nehnutelnost s cislom " + i, gps1);
+                e2 = new Nehnutelnost(i, "Nehnutelnost s cislom " + i, gps2);
+                e.setOther(e2);
+                e2.setOther(e);
                 this.tree.insert((T) e);
+                this.tree.insert((T) e2);
+                this.entities.add((T) e);
+                this.entities.add((T) e2);
+            } else if (clazz.equals(TestClass.class)) {
+
+                int x = this.rand.nextInt((int)maxx);
+                int y = this.rand.nextInt((int)maxy);
+                if (!entities.isEmpty() && rand < duplicate) {
+                    T entity = this.getRandomEntity();
+                    if (entity instanceof Entity) {
+                        if (this.rand.nextBoolean())
+                            x = ((TestClass) entity).getX();
+                        else
+                            y = ((TestClass) entity).getY();
+                    }
+                }
+
+                IObject obj = new TestClass(x,y, i);
+                this.tree.insert((T) obj);
+                this.entities.add((T)obj);
             } else {
-                e = new Parcela(i, "Parcela s cislom " + i, gps);
+                e = new Parcela(i, "Parcela s cislom " + i, gps1);
+                e2 = new Parcela(i, "Parcela s cislom " + i, gps2);
+                e.setOther(e2);
+                e2.setOther(e);
                 this.tree.insert((T) e);
+                this.tree.insert((T) e2);
+                this.entities.add((T) e);
+                this.entities.add((T) e2);
             }
-            this.entities.add((T) e);
+
         }
         return this.entities;
     }
 
-    public void insertIntoAll(ArrayList<? extends Entity> ent) {
-        this.entities.addAll((ArrayList<? extends T>) ent);
+    public ArrayList<T> generujObe(int start, int pocet) {
+        for (int i = 0; i < pocet; i++) {
+            GPS gps1 = this.randomGPS();
+            GPS gps2 = this.randomGPS();
 
-        for (Entity e : ent) {
-            this.tree.insert((T)e);
+            GPSObjekt obj = null;
+            GPSObjekt obj2 = null;
+            if (this.rand.nextBoolean()) { // neh
+                Nehnutelnost neh1 = new Nehnutelnost(i, "Neh " + i, gps1);
+                Nehnutelnost neh2 = new Nehnutelnost(i, "Neh " + i, gps2);
+
+                obj = new GPSObjekt(neh1, null);
+                obj2 = new GPSObjekt(neh2, null);
+
+                obj.setOther(obj2);
+                obj2.setOther(obj);
+
+                this.tree.insert((T) obj);
+                this.tree.insert((T) obj2);
+            } else {
+                Parcela par1 = new Parcela(i, "Neh " + i, gps1);
+                Parcela par2 = new Parcela(i, "Neh " + i, gps2);
+
+                obj = new GPSObjekt(null, par1);
+                obj2 = new GPSObjekt(null, par2);
+
+                obj.setOther(obj2);
+                obj2.setOther(obj);
+
+                this.tree.insert((T) obj);
+                this.tree.insert((T) obj2);
+            }
+            this.entities.add((T) obj);
+            this.entities.add((T) obj2);
         }
+        return this.entities;
     }
 
     public int vyhladaj(int pocetOperacii) {
         int count = 0;
 
         for (int i = 0; i < pocetOperacii; i++) {
-            T entity;
+            ArrayList<T> found;
             T random = this.entities.get(rand.nextInt(this.entities.size()));
-            entity = this.tree.find(random);
+            found = this.tree.find(random);
 
-            if (entity != null && entity.equals(random)) {
-                count++;
-            } else {
-                return count;
+            for (T obj : found) {
+                if (obj != null && obj.equalUUID(random)) {
+                    count++;
+                    break;
+                }
             }
         }
         return count;
     }
 
+    public ArrayList<Node<T>> getInOrder() {
+        return this.tree.inOrder(this.tree.getRoot());
+    }
+
     public int vymaz(int pocetOperacii) {
         int count = 0;
         for (int i = 0; i < pocetOperacii; i++) {
+
             T entity;
             T random = this.entities.remove(rand.nextInt(this.entities.size()));
-
+            T e = null;
             entity = this.tree.delete(random);
-
-
-            if (entity != null && entity.equals(random)) {
+            if (random instanceof Entity) {
+                e = (T) ((Entity)random).getOther();
+                this.entities.remove(e);
+                e = this.tree.delete(e);
+            }
+            if (random instanceof GPSObjekt) {
+                e = (T) ((GPSObjekt)random).getOther();
+                this.entities.remove(e);
+                e = this.tree.delete(e);
+            }
+            if (entity != null && entity.equalUUID(random)) {
                 count++;
             } else {
                 return count;
@@ -114,13 +201,88 @@ public class Generator<T extends IComparator<T>> {
         for (int i = 0; i < pocetOperacii; i++) {
             T random = this.entities.remove(rand.nextInt(this.entities.size()));
             T rand = null;
-            if (random instanceof Nehnutelnost)
+            T rand2 = null;
+            if (random instanceof Nehnutelnost) {
                 rand = (T) new Nehnutelnost(555555,"aasdasd", this.randomGPS());
-            else if (random instanceof Parcela)
+                rand2 = (T) new Nehnutelnost(555555,"aasdasd", this.randomGPS());
+            } else if (random instanceof Parcela) {
                 rand = (T) new Parcela(555555,"aasdasd", this.randomGPS());
+                rand2 = (T) new Parcela(555555,"aasdasd", this.randomGPS());
+            }
             this.entities.add(rand);
+            this.entities.add(rand2);
             this.tree.edit(random, rand);
+            if (random instanceof Entity) {
+                this.tree.edit((T)((Entity) random).getOther(), rand2);
+            }
         }
+    }
+
+    public void editGPS(int pocetOperacii) {
+        for (int i = 0; i < pocetOperacii; i++) {
+            GPSObjekt random = (GPSObjekt) this.entities.remove(this.rand.nextInt(this.entities.size()));
+            GPSObjekt random2 = random.getOther();
+            this.entities.remove(random2);
+
+            GPSObjekt neww = null;
+            GPSObjekt neww2 = null;
+
+            if (random.getNehnutelnost() != null) {
+                Nehnutelnost neh1 = new Nehnutelnost(999999, "hahaha", this.randomGPS());
+                Nehnutelnost neh2 = new Nehnutelnost(999999, "hahaha", this.randomGPS());
+
+                neww = new GPSObjekt(neh1, null);
+                neww2 = new GPSObjekt(neh2, null);
+            } else {
+                Parcela par1 = new Parcela(999999, "hahaha", this.randomGPS());
+                Parcela par2 = new Parcela(999999, "hahaha", this.randomGPS());
+
+                neww = new GPSObjekt(null, par1);
+                neww2 = new GPSObjekt(null, par2);
+            }
+
+            if (this.rand.nextBoolean()) {
+                if (random.getNehnutelnost() != null) {
+                    Nehnutelnost neh1 = new Nehnutelnost(999999, "hahaha", this.randomGPS());
+                    Nehnutelnost neh2 = new Nehnutelnost(999999, "hahaha", this.randomGPS());
+
+                    neww = new GPSObjekt(neh1, null);
+                    neww2 = new GPSObjekt(neh2, null);
+                } else {
+                    Parcela par1 = new Parcela(999999, "hahaha", this.randomGPS());
+                    Parcela par2 = new Parcela(999999, "hahaha", this.randomGPS());
+
+                    neww = new GPSObjekt(null, par1);
+                    neww2 = new GPSObjekt(null, par2);
+                }
+            } else {
+                if (random.getNehnutelnost() != null) {
+                    Nehnutelnost neh1 = new Nehnutelnost(999999, "hahaha", random.getGPS());
+                    Nehnutelnost neh2 = new Nehnutelnost(999999, "hahaha", random2.getGPS());
+
+                    neww = new GPSObjekt(neh1, null);
+                    neww2 = new GPSObjekt(neh2, null);
+                } else {
+                    Parcela par1 = new Parcela(999999, "hahaha", random.getGPS());
+                    Parcela par2 = new Parcela(999999, "hahaha", random2.getGPS());
+
+                    neww = new GPSObjekt(null, par1);
+                    neww2 = new GPSObjekt(null, par2);
+                }
+            }
+            neww.setOther(neww2);
+            neww2.setOther(neww);
+
+            this.tree.edit((T) random, (T) neww);
+            this.tree.edit((T) random.getOther(), (T) neww2);
+
+            this.entities.add((T) neww);
+            this.entities.add((T) neww2);
+        }
+    }
+
+    public ArrayList<Node<T>> getLevelOrder() {
+        return this.tree.levelOrder(this.getKoren());
     }
 
     public void clear() {

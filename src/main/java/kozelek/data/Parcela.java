@@ -4,7 +4,7 @@ import kozelek.data.objekt.*;
 
 import java.util.ArrayList;
 
-public class Parcela extends Entity implements IComparator<Parcela>, Editable<Parcela> {
+public class Parcela extends Entity implements IObject, ISave {
 
     private ArrayList<Nehnutelnost> nehnutelnosti;
     private int id;
@@ -29,11 +29,25 @@ public class Parcela extends Entity implements IComparator<Parcela>, Editable<Pa
         return this.nehnutelnosti;
     }
 
+    public void addNehnutelnost(Nehnutelnost nehnutelnost) {
+        this.nehnutelnosti.add(nehnutelnost);
+    }
+
     @Override
-    public boolean equal(Parcela other) {
-        return Double.compare(this.getGPS().getX(), other.getGPS().getX()) == 0 &&
-                Double.compare(this.getGPS().getY(), other.getGPS().getY()) == 0 &&
-                this.id == other.id && this.description.equals(other.description);
+    public boolean equalKey(IObject other) {
+        if (!(other instanceof Parcela otherParcela)) {
+            throw new ClassCastException("Incompatible types.");
+        }
+        return Math.abs(this.getGPS().getX() - otherParcela.getGPS().getX()) < Entity.EPSILON &&
+                Math.abs(this.getGPS().getY() - otherParcela.getGPS().getY()) < Entity.EPSILON;
+    }
+
+    @Override
+    public boolean equalUUID(IObject other) {
+        if (!(other instanceof Parcela otherParcela)) {
+            throw new ClassCastException("Incompatible types.");
+        }
+        return this.getUuid().compareTo(otherParcela.getUuid()) == 0;
     }
 
     @Override
@@ -42,18 +56,28 @@ public class Parcela extends Entity implements IComparator<Parcela>, Editable<Pa
     }
 
     @Override
-    public int compare(Parcela other, int level) {
+    public int compare(IObject other, int level) {
+        if (!(other instanceof Parcela otherParcela)) {
+            throw new ClassCastException("Incompatible types.");
+        }
         return switch (level % 2) {
-            case 0 -> Double.compare(this.getGPS().getX(), other.getGPS().getX()); // d1 > d2 = +
-            case 1 -> Double.compare(this.getGPS().getY(), other.getGPS().getY()); // d1 < d2 = -
+            case 0 -> Math.abs(this.getGPS().getX() - otherParcela.getGPS().getX()) < Entity.EPSILON ? 0 : Double.compare(this.getGPS().getX(), otherParcela.getGPS().getX()); // d1 > d2 = +
+            case 1 -> Math.abs(this.getGPS().getY() - otherParcela.getGPS().getY()) < Entity.EPSILON ? 0 : Double.compare(this.getGPS().getY(), otherParcela.getGPS().getY()); // d1 < d2 = -
             default -> 0;
         };
     }
 
+    // starting char, id, popis, x, y, uuid, (other)x, y, uuid
+
     @Override
-    public void edit(Parcela obj) {
-        this.id = obj.id;
-        this.description = obj.description;
-        this.setGPS(obj.getGPS());
+    public String toCsvString() {
+        Parcela other = (Parcela) this.getOther();
+        return  this.id + Entity.CSV_DELIMITER +
+                this.description + Entity.CSV_DELIMITER +  // .replace(",", ";") ak by sme do popisu vkladali čiarky :)
+                this.getGPS().toCsvString() + Entity.CSV_DELIMITER +
+                this.getUuid().toString() + Entity.CSV_DELIMITER +
+                other.getGPS().toCsvString() + Entity.CSV_DELIMITER +
+                other.getUuid().toString() +
+                "\n";
     }
 }

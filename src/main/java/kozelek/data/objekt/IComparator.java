@@ -4,6 +4,7 @@ import kozelek.data.GPS;
 
 public interface IComparator<T> {
     int compare(T other, int level);
-    boolean equal(T other);
+    boolean equalKey(T other);
+    boolean equalUUID(T other);
     int getDimension();
 }

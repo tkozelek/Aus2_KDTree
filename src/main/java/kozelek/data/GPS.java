@@ -1,5 +1,7 @@
 package kozelek.data;
 
+import kozelek.data.objekt.Entity;
+
 public class GPS {
     private double x,y;
     private char pozX, pozY;
@@ -34,7 +36,7 @@ public class GPS {
 
     public String toCsvString() {
         return this.getX() +
-                "," + this.getY();
+                Entity.CSV_DELIMITER + this.getY();
     }
 }
 
