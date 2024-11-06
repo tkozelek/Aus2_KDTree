@@ -1,6 +1,8 @@
 package kozelek;
 
 import kozelek.GUI.Wrapper;
+import kozelek.GUI.contoller.MainController;
+import kozelek.GUI.views.MainWindow;
 import kozelek.data.GPS;
 import kozelek.data.Nehnutelnost;
 import kozelek.data.Parcela;
@@ -21,12 +23,15 @@ public class Main {
         KDTree<GPSObjekt> treeAll = new KDTree<>();
         Wrapper wrapper = new Wrapper(treeNehnutelnost, treeParcela, treeAll);
 
-        wrapper.importCsv("neh.csv", Nehnutelnost.class);
-        wrapper.importCsv("par.csv", Parcela.class);
+        MainWindow mw = new MainWindow();
+        MainController mc = new MainController(wrapper, mw);
 
-        System.out.println(wrapper.getParcelyLevelOrder().size());
-        System.out.println(wrapper.getNehnutelnostiLevelOrder().size());
-        System.out.println(wrapper.getVsetkyLevelOrder().size());
+//        wrapper.importCsv("neh.csv", Nehnutelnost.class);
+//        wrapper.importCsv("par.csv", Parcela.class);
+//
+//        System.out.println(wrapper.getParcelyLevelOrder().size());
+//        System.out.println(wrapper.getNehnutelnostiLevelOrder().size());
+//        System.out.println(wrapper.getVsetkyLevelOrder().size());
 
 //        int pocetDelete = 5000;
 //

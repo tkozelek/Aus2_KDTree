@@ -17,6 +17,14 @@ public class Parcela extends Entity implements IObject, ISave {
         this.description = description;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
     @Override
     public String toString() {
         return "Parcela " +

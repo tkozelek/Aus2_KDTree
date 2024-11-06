@@ -17,6 +17,14 @@ public class Nehnutelnost extends Entity implements IObject, ISave {
         this.description = description;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public int getId() {
+        return id;
+    }
+
     @Override
     public String toString() {
         return "Nehnutelnost " +
