@@ -20,11 +20,11 @@ public class Main {
     public static void main(String[] args) {
         KDTree<Nehnutelnost> treeNehnutelnost = new KDTree<>();
         KDTree<Parcela> treeParcela = new KDTree<>();
-        KDTree<GPSObjekt> treeAll = new KDTree<>();
-        Wrapper wrapper = new Wrapper(treeNehnutelnost, treeParcela, treeAll);
-
-        MainWindow mw = new MainWindow();
-        MainController mc = new MainController(wrapper, mw);
+//        KDTree<GPSObjekt> treeAll = new KDTree<>();
+//        Wrapper wrapper = new Wrapper(treeNehnutelnost, treeParcela, treeAll);
+//
+//        MainWindow mw = new MainWindow();
+//        MainController mc = new MainController(wrapper, mw);
 
 //        wrapper.importCsv("neh.csv", Nehnutelnost.class);
 //        wrapper.importCsv("par.csv", Parcela.class);
@@ -33,24 +33,33 @@ public class Main {
 //        System.out.println(wrapper.getNehnutelnostiLevelOrder().size());
 //        System.out.println(wrapper.getVsetkyLevelOrder().size());
 
-//        int pocetDelete = 5000;
-//
-//        KDTree<GPSObjekt> tree = new KDTree<>();
-//        Generator<GPSObjekt> gen = new Generator<>(tree, 1000000,1000000, 0,0);
-//
-//        gen.generujObe(20000);
-//
-//        int before = gen.getInOrder().size();
-//
-//        int a = gen.vymaz(pocetDelete);
-//
-//        gen.editGPS(3000);
-//
-//        int c = gen.vyhladaj(5000);
-//
-//        int after = gen.getLevelOrder().size();
-//
-//        System.out.printf("InOrderSize: %d A: %d InOrderSize: %d Search: %d\n", before, a, after, c);
+        int pocetDelete = 7500;
+
+        for (int i = 1000; i < 10000+1; i++) {
+            KDTree<Nehnutelnost> tree = new KDTree<>();
+            Generator<Nehnutelnost> gen = new Generator<>(tree, 1000,1000, 0,0);
+
+            gen.setSeed(i);
+
+            gen.generujData(0, 10000, Nehnutelnost.class, 0.2);
+
+            int a = gen.vymaz(pocetDelete);
+
+            gen.generujData(0, 15000, Nehnutelnost.class, 0.2);
+
+            a = gen.vymaz(pocetDelete);
+            int b = gen.getLevelOrder().size();
+
+            System.out.println(gen.vyhladaj(5000));
+
+            System.out.println(b);
+
+            gen.clear();
+        }
+
+
+
+//        System.out.printf("InOrderSize: %d \nA: %d \nLevelOrderSize: %d\n", before, a, after);
 
 
 //        input = new Scanner(System.in);

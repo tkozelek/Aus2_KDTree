@@ -76,26 +76,52 @@ public class KDTree<T extends IObject>  {
     public T delete(T data) {
         Node<T> nodeToDelete = this.findOneNode(data);
 
-        if (nodeToDelete == null)
+        if (nodeToDelete == null) {
             return null; // neexistuje
+        }
 
         T boundObject = nodeToDelete.getBoundObject();
 
+        ArrayList<Node<T>> replacements = null;
+        Node<T> rep = null;
+        // zmažeme node, všetky náhrady sa uložia tu
+        replacements = this.deleteNode(nodeToDelete);
+        ArrayList<Node<T>> duplicates = null;
+        while (replacements != null && !replacements.isEmpty()) {
+            // pre tieto náhrady musíme v pravom podstrome najsť duplikáty
+            rep = replacements.removeLast(); // zoberieme replacement
+            if (rep.getRightChild() != null)
+                duplicates = this.findSameNodesInSubtree(rep, rep.getRightChild(), rep.getLevel());
+
+            if (duplicates != null) { // ak sme našli duplikáty
+                for (Node<T> duplicate : duplicates) { // prejdeme cez ne a zmažeme ich
+                    ArrayList<Node<T>> reps = this.deleteNode(duplicate);
+                    if (reps != null) {
+                        replacements.addAll(reps); // do náhrad, pridáme náhrady zmazavaných duplikátov
+                    }
+                    this.insert(duplicate.getBoundObject());
+                }
+                duplicates = null;
+            }
+        }
+        return boundObject;
+    }
+
+    public ArrayList<Node<T>> deleteNode(Node<T> nodeToDelete) {
         if (nodeToDelete.isLeaf()) { // je listom
             if (nodeToDelete.equals(this.root))
                 this.root = null;
             nodeToDelete.removeFromParent();
-            return boundObject;
+            return null;
         }
 
         // level % 2 = 0 -> x
         // level % 2 = 1 -> y
         // hladame v pravom podstrome najmensiu danu suradnicu
         // resp v lavom najvacsiu
-        Node<T> replacement = null;
-        Node<T> mainReplacement = null;
-        int i = 0;
+        ArrayList<Node<T>> replacements = new ArrayList<>();
         while (!nodeToDelete.isLeaf()) {
+            Node<T> replacement = null;
 
             if (nodeToDelete.getRightChild() != null)
                 replacement = this.findMinNodeInSubtree(nodeToDelete.getRightChild(), nodeToDelete.getLevel());
@@ -105,15 +131,15 @@ public class KDTree<T extends IObject>  {
             if (nodeToDelete.equals(this.root)) {
                 this.root = replacement;
             }
-            if (i == 0)
-                mainReplacement = replacement; // prva nahrada, podla ktorej musime hladat
-            nodeToDelete.swapNodes(replacement); // vymena nahrady za zmazavany node
-            ++i;
-        }
 
+            if (replacement != null) {
+                replacements.add(replacement); // prva nahrada, podla ktorej musime hladat
+                nodeToDelete.swapNodes(replacement); // vymena nahrady za zmazavany node
+            }
+
+        }
         nodeToDelete.removeFromParent();
-        nodeToDelete = null;
-        return boundObject;
+        return replacements;
     }
 
     public ArrayList<Node<T>> findSameNodesInSubtree(Node<T> comparingNode, Node<T> startNode, int level) {
@@ -128,10 +154,13 @@ public class KDTree<T extends IObject>  {
                 found.add(currentNode);
             }
 
-            if (level % startNode.getBoundObject().getDimension() ==
-                    currentNode.getLevel() % currentNode.getBoundObject().getDimension()) {
+            int currentDimension = currentNode.getLevel() % currentNode.getBoundObject().getDimension();
+            int searchingDimension = level % comparingNode.getBoundObject().getDimension();
+
+            // ak sme na rovnakej urovni (napr. x), pokračujeme len vľavo
+            if (currentDimension == searchingDimension) {
                 if (currentNode.getLeftChild() != null) nodesToCheck.add(currentNode.getLeftChild());
-            } else {
+            } else { // musime pozriet obe
                 if (currentNode.getLeftChild() != null) nodesToCheck.add(currentNode.getLeftChild());
                 if (currentNode.getRightChild() != null) nodesToCheck.add(currentNode.getRightChild());
             }
@@ -152,8 +181,10 @@ public class KDTree<T extends IObject>  {
                 minNode = currentNode;
             }
 
-            if (level % startNode.getBoundObject().getDimension() ==
-                    currentNode.getLevel() % currentNode.getBoundObject().getDimension()) {
+            int currentDimension = currentNode.getLevel() % currentNode.getBoundObject().getDimension();
+            int searchingDimension = level % startNode.getBoundObject().getDimension();
+
+            if (currentDimension == searchingDimension) {
                 if (currentNode.getLeftChild() != null) nodesToCheck.add(currentNode.getLeftChild());
             } else {
                 if (currentNode.getLeftChild() != null) nodesToCheck.add(currentNode.getLeftChild());
@@ -176,8 +207,10 @@ public class KDTree<T extends IObject>  {
                 minNode = currentNode;
             }
 
-            if (level % startNode.getBoundObject().getDimension() ==
-                    currentNode.getLevel() % currentNode.getBoundObject().getDimension()) {
+            int currentDimension = currentNode.getLevel() % currentNode.getBoundObject().getDimension();
+            int searchingDimension = level % startNode.getBoundObject().getDimension();
+
+            if (currentDimension == searchingDimension) {
                 if (currentNode.getRightChild() != null) nodesToCheck.add(currentNode.getRightChild());
             } else {
                 if (currentNode.getLeftChild() != null) nodesToCheck.add(currentNode.getLeftChild());

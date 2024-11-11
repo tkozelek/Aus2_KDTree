@@ -56,54 +56,22 @@ public class Generator<T extends IObject> {
         for (int i = start; i < pocet + start; i++) {
             double rand = this.rand.nextDouble();
             GPS gps1 = this.randomGPS();
-            GPS gps2 = this.randomGPS();
             if (!entities.isEmpty() && rand < duplicate) {
                 T entity = this.getRandomEntity();
                 if (entity instanceof Entity) {
-                    if (this.rand.nextBoolean())
-                        gps1 = ((Entity) entity).getGPS();
-                    else
-                        gps2 = ((Entity) entity).getGPS();
+                    gps1 = ((Entity) entity).getGPS();
                 }
             }
 
             Entity e;
-            Entity e2;
             if (clazz.equals(Nehnutelnost.class)) {
                 e = new Nehnutelnost(i, "Nehnutelnost s cislom " + i, gps1);
-                e2 = new Nehnutelnost(i, "Nehnutelnost s cislom " + i, gps2);
-                e.setOther(e2);
-                e2.setOther(e);
                 this.tree.insert((T) e);
-                this.tree.insert((T) e2);
                 this.entities.add((T) e);
-                this.entities.add((T) e2);
-            } else if (clazz.equals(TestClass.class)) {
-
-                int x = this.rand.nextInt((int)maxx);
-                int y = this.rand.nextInt((int)maxy);
-                if (!entities.isEmpty() && rand < duplicate) {
-                    T entity = this.getRandomEntity();
-                    if (entity instanceof Entity) {
-                        if (this.rand.nextBoolean())
-                            x = ((TestClass) entity).getX();
-                        else
-                            y = ((TestClass) entity).getY();
-                    }
-                }
-
-                IObject obj = new TestClass(x,y, i);
-                this.tree.insert((T) obj);
-                this.entities.add((T)obj);
-            } else {
+            }  else {
                 e = new Parcela(i, "Parcela s cislom " + i, gps1);
-                e2 = new Parcela(i, "Parcela s cislom " + i, gps2);
-                e.setOther(e2);
-                e2.setOther(e);
                 this.tree.insert((T) e);
-                this.tree.insert((T) e2);
                 this.entities.add((T) e);
-                this.entities.add((T) e2);
             }
 
         }
@@ -178,16 +146,7 @@ public class Generator<T extends IObject> {
             T random = this.entities.remove(rand.nextInt(this.entities.size()));
             T e = null;
             entity = this.tree.delete(random);
-            if (random instanceof Entity) {
-                e = (T) ((Entity)random).getOther();
-                this.entities.remove(e);
-                e = this.tree.delete(e);
-            }
-            if (random instanceof GPSObjekt) {
-                e = (T) ((GPSObjekt)random).getOther();
-                this.entities.remove(e);
-                e = this.tree.delete(e);
-            }
+
             if (entity != null && entity.equalUUID(random)) {
                 count++;
             } else {

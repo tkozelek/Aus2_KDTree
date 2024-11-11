@@ -216,7 +216,10 @@ class TreeWrapperTest {
 
         @Override
         public boolean equalUUID(IObject other) {
-            return false;
+            if (!(other instanceof TestEntity otherT)) {
+                throw new ClassCastException("Incompatible types.");
+            }
+            return this.getUuid().compareTo(otherT.getUuid()) == 0;
         }
 
         @Override
