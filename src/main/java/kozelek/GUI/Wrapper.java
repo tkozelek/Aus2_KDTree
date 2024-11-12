@@ -5,12 +5,14 @@ import kozelek.data.Nehnutelnost;
 import kozelek.data.Parcela;
 import kozelek.data.objekt.Entity;
 import kozelek.data.objekt.GPSObjekt;
-import kozelek.data.objekt.IObject;
+import kozelek.data.objekt.interfaces.IHasOther;
+import kozelek.data.objekt.interfaces.IObject;
 import kozelek.tree.KDTree;
 import kozelek.tree.Node;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.UUID;
 
 public class Wrapper {
@@ -50,12 +52,6 @@ public class Wrapper {
         }
     }
 
-    // program nepodporuje duplikacie
-    // zial som nestihol :(
-    // takže ak nastavíte duplikáty vyššie ako 0
-    // štruktúra môže byť nefunkčná
-    // resp nemusí fungovať správne :)
-
     public void generujAVlozParcely(int start, int pocet, double duplicate) {
         ArrayList<Parcela> vygenerovane = this.genPar.generuj(start, pocet, duplicate, Parcela.class);
 
@@ -65,6 +61,47 @@ public class Wrapper {
 
             this.vlozParcelu(par1, par2);
         }
+    }
+
+    public void generujAVlozObe(int startNeh, int pocetNeh, int startPar, int pocetPar, double duplicateNeh, double duplicatePar) {
+        ArrayList<Nehnutelnost> genNehnutelnosti = this.genNeh.generuj(startNeh, pocetNeh, duplicateNeh, Nehnutelnost.class);
+        ArrayList<Parcela> genParcely = this.genPar.generuj(startPar, pocetPar, duplicatePar, Parcela.class);
+        Random rand = new Random();
+
+        while (!genNehnutelnosti.isEmpty() || !genParcely.isEmpty()) {
+            if (!genNehnutelnosti.isEmpty() && !genParcely.isEmpty()) {
+                if (rand.nextBoolean()) {
+                    Nehnutelnost neh1 = genNehnutelnosti.removeFirst();
+                    Nehnutelnost neh2 = genNehnutelnosti.isEmpty() ? null : genNehnutelnosti.removeFirst();
+
+                    if (neh2 != null) {
+                        this.vlozNehnutelnost(neh1, neh2);
+                    }
+                } else {
+                    Parcela par1 = genParcely.removeFirst();
+                    Parcela par2 = genParcely.isEmpty() ? null : genParcely.removeFirst();
+
+                    if (par2 != null) {
+                        this.vlozParcelu(par1, par2);
+                    }
+                }
+            } else if (!genNehnutelnosti.isEmpty()) {
+                Nehnutelnost neh1 = genNehnutelnosti.removeFirst();
+                Nehnutelnost neh2 = genNehnutelnosti.isEmpty() ? null : genNehnutelnosti.removeFirst();
+
+                if (neh2 != null) {
+                    this.vlozNehnutelnost(neh1, neh2);
+                }
+            } else {
+                Parcela par1 = genParcely.removeFirst();
+                Parcela par2 = genParcely.isEmpty() ? null : genParcely.removeFirst();
+
+                if (par2 != null) {
+                    this.vlozParcelu(par1, par2);
+                }
+            }
+        }
+
     }
 
     // INSERT
@@ -115,7 +152,7 @@ public class Wrapper {
     public void najdiANastavReferencie(IObject object) {
         if (object instanceof Parcela par) {
             ArrayList<Nehnutelnost> nehs = null;
-            nehs = this.nehnutelnosti.find(new Nehnutelnost(0, "", par.getGPS())); // nehnutelnost
+            nehs = this.vyhladatNehnutelnosti(par.getGPS()); // nehnutelnost
             if (nehs != null) {
                 for (Nehnutelnost neh : nehs) {
                     par.addNehnutelnost(neh);
@@ -124,11 +161,35 @@ public class Wrapper {
             }
         } else if (object instanceof Nehnutelnost neh) {
             ArrayList<Parcela> pars = null;
-            pars =  this.parcely.find(new Parcela(0, "", neh.getGPS())); // nehnutelnost
+            pars =  this.vyhladatParcely(neh.getGPS()); // nehnutelnost
             if (pars != null) {
                 for (Parcela par : pars) {
                     par.addNehnutelnost(neh);
                     neh.addParcela(par);
+                }
+            }
+        }
+    }
+
+    public void vymazReferencie(IObject object) {
+        if (object instanceof Parcela par) {
+            ArrayList<Nehnutelnost> nehs = par.getNehnutelnosti();
+            if (nehs != null) {
+                var iterator = nehs.iterator();
+                while (iterator.hasNext()) {
+                    Nehnutelnost neh = iterator.next();
+                    iterator.remove();
+                    neh.removeParcela(par);
+                }
+            }
+        } else if (object instanceof Nehnutelnost neh) {
+            ArrayList<Parcela> pars = neh.getParcely();
+            if (pars != null) {
+                var iterator = pars.iterator();
+                while (iterator.hasNext()) {
+                    Parcela par = iterator.next();
+                    iterator.remove();
+                    par.removeNehnutelnost(neh);
                 }
             }
         }
@@ -140,12 +201,22 @@ public class Wrapper {
         Parcela par = new Parcela(0, "", gps1);
 
         ArrayList<GPSObjekt> found = new ArrayList<>();
+        ArrayList<GPSObjekt> temp = this.vsetky.find(new GPSObjekt(neh, par));
 
-        found.addAll(this.vsetky.find(new GPSObjekt(neh, par)));
+        if (temp != null)
+            found = temp;
 
         neh.setGPS(gps2);
         par.setGPS(gps2);
-        found.addAll(this.vsetky.find(new GPSObjekt(neh, par)));
+
+        temp = this.vsetky.find(new GPSObjekt(neh, par));
+
+        if (temp != null)
+            for (GPSObjekt obj : temp) {
+                if (!found.contains(obj)) {
+                    found.add(obj);
+                }
+            }
 
         return found;
     }
@@ -153,39 +224,61 @@ public class Wrapper {
     public ArrayList<Nehnutelnost> vyhladatNehnutelnosti(GPS gps) {
         Nehnutelnost neh = new Nehnutelnost(0, "", gps);
 
-        return new ArrayList<>(this.nehnutelnosti.find(neh));
+        ArrayList<Nehnutelnost> nehnutelnosti = this.nehnutelnosti.find(neh);
+
+        return nehnutelnosti;
     }
 
     public ArrayList<Parcela> vyhladatParcely(GPS gps) {
         Parcela par = new Parcela(0, "", gps);
 
-        return new ArrayList<>(this.parcely.find(par));
+        ArrayList<Parcela> parcely = this.parcely.find(par);
+
+        return parcely;
     }
 
     // EDIT
-    public void upravNehnutelnost(Nehnutelnost old, Nehnutelnost neww) {
+    public GPSObjekt upravNehnutelnost(Nehnutelnost old, Nehnutelnost neww) {
         this.nehnutelnosti.edit(old, neww);
 
+        this.vymazReferencie(old);
+        this.najdiANastavReferencie(neww);
+
+        IHasOther oldOther = old.getOther();
+
+        oldOther.setOther(neww);
+        neww.setOther(oldOther);
+
+        GPSObjekt oldd = new GPSObjekt(old, null);
         GPSObjekt newObj = new GPSObjekt(neww, null);
 
-        GPSObjekt oldd = this.vsetky.findOneNode(new GPSObjekt(old, null)).getBoundObject();
-
         this.upravVsetky(oldd, newObj);
+        return newObj;
     }
 
-    public void upravParcely(Parcela old, Parcela neww) {
+    public GPSObjekt upravParcelu(Parcela old, Parcela neww) {
         this.parcely.edit(old, neww);
 
+        this.vymazReferencie(old);
+        this.najdiANastavReferencie(neww);
+
+        IHasOther oldOther = old.getOther();
+
+        oldOther.setOther(neww);
+        neww.setOther(oldOther);
+
+        GPSObjekt oldd = new GPSObjekt(null, old);
         GPSObjekt newObj = new GPSObjekt(null, neww);
 
-        GPSObjekt oldd = this.vsetky.findOneNode(new GPSObjekt(null, old)).getBoundObject();
-
         this.upravVsetky(oldd, newObj);
+        return newObj;
     }
 
     public void upravVsetky(GPSObjekt old, GPSObjekt neww) {
+        GPSObjekt objectToEdit = this.vsetky.findOneNode(old).getBoundObject();
+
         // musime zmenit referenciu
-        GPSObjekt oldOther = old.getOther();
+        IHasOther oldOther = objectToEdit.getOther();
 
         oldOther.setOther(neww);
         neww.setOther(oldOther);
@@ -193,34 +286,44 @@ public class Wrapper {
         this.vsetky.edit(old, neww);
     }
 
+
     // DELETE
     public void vyradNehnutelnost(Nehnutelnost neh) {
         Nehnutelnost other = (Nehnutelnost) neh.getOther();
 
+        ArrayList<Parcela> pars = neh.getParcely();
+        pars.addAll(other.getParcely());
+
+        for (Parcela par : pars) {
+            par.removeNehnutelnost(neh);
+            par.removeNehnutelnost(other);
+        }
+
         this.nehnutelnosti.delete(neh);
         this.nehnutelnosti.delete(other);
-
-        GPSObjekt oldd = this.vsetky.findOneNode(new GPSObjekt(neh, null)).getBoundObject();
-
-        this.vyradVsetky(oldd);
     }
 
     public void vyradParcelu(Parcela par) {
         Parcela other = (Parcela) par.getOther();
 
+        ArrayList<Nehnutelnost> nehs = par.getNehnutelnosti();
+        nehs.addAll(other.getNehnutelnosti());
+
+        for (Nehnutelnost neh : nehs) {
+            neh.removeParcela(par);
+            neh.removeParcela(other);
+        }
+
         this.parcely.delete(par);
         this.parcely.delete(other);
-
-        GPSObjekt oldd = this.vsetky.findOneNode(new GPSObjekt(null, par)).getBoundObject();
-
-        this.vyradVsetky(oldd);
     }
 
     public void vyradVsetky(GPSObjekt obj) {
-        GPSObjekt other = obj.getOther();
+        GPSObjekt objectToDelete = this.vsetky.findOneNode(obj).getBoundObject();
+        IHasOther other = objectToDelete.getOther();
 
         this.vsetky.delete(obj);
-        this.vsetky.delete(other);
+        this.vsetky.delete((GPSObjekt) other);
     }
 
     public void exportNehnutelnosti(String filePath) {
@@ -239,9 +342,10 @@ public class Wrapper {
         File file = new File(filePath);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write(genNeh.toCsvString());
-            if (items != null) {
+            if (items != null && !items.isEmpty()) {
                 for (Node<Nehnutelnost> objekt : items) {
-                    writer.write(objekt.getBoundObject().toCsvString());
+                    if (objekt.getBoundObject() != null)
+                        writer.write(objekt.getBoundObject().toCsvString());
                 }
             }
         } catch (IOException e) {
@@ -262,12 +366,15 @@ public class Wrapper {
         filePath = "exports/" + filePath;
         ArrayList<Node<Parcela>> items = this.parcely.levelOrder(this.parcely.getRoot()); // dá všetky objekty
 
+        System.out.println(items.size());
+
         File file = new File(filePath);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write(genPar.toCsvString());
-            if (items != null) {
+            if (items != null && !items.isEmpty()) {
                 for (Node<Parcela> objekt : items) {
-                    writer.write(objekt.getBoundObject().toCsvString());
+                    if (objekt.getBoundObject() != null)
+                        writer.write(objekt.getBoundObject().toCsvString());
                 }
             }
         } catch (IOException e) {

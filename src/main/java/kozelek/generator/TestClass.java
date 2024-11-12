@@ -1,7 +1,7 @@
 package kozelek.generator;
 
 import kozelek.data.objekt.Entity;
-import kozelek.data.objekt.IObject;
+import kozelek.data.objekt.interfaces.IObject;
 
 import java.util.UUID;
 

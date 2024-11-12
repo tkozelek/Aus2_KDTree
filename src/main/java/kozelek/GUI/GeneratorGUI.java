@@ -4,9 +4,7 @@ import kozelek.data.GPS;
 import kozelek.data.Nehnutelnost;
 import kozelek.data.Parcela;
 import kozelek.data.objekt.Entity;
-import kozelek.data.objekt.IObject;
-import kozelek.generator.TestClass;
-import kozelek.tree.KDTree;
+import kozelek.data.objekt.interfaces.IObject;
 
 import java.util.ArrayList;
 import java.util.Random;

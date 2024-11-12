@@ -1,11 +1,6 @@
 package kozelek.tree;
 
-import kozelek.data.GPS;
-import kozelek.data.objekt.Entity;
-import kozelek.data.objekt.IComparator;
-import kozelek.data.objekt.IObject;
-
-import java.util.ArrayList;
+import kozelek.data.objekt.interfaces.IObject;
 
 public class Node<T extends IObject> {
     private Node<T> leftChild;

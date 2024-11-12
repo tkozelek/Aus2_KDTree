@@ -1,6 +1,4 @@
-package kozelek.data.objekt;
-
-import kozelek.data.GPS;
+package kozelek.data.objekt.interfaces;
 
 public interface IComparator<T> {
     int compare(T other, int level);

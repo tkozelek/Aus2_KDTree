@@ -1,7 +1,6 @@
 package kozelek.test;
 
-import kozelek.data.GPS;
-import kozelek.data.objekt.IObject;
+import kozelek.data.objekt.interfaces.IObject;
 import kozelek.tree.KDTree;
 import kozelek.tree.Node;
 import org.junit.jupiter.api.BeforeEach;
@@ -151,8 +150,8 @@ public class KDTreeTestInteger {
 
     @Test
     void testRandomOperations() {
-        int init = 1000;
-        int numberOfRandomOperations = 3;
+        int init = 0;
+        int numberOfRandomOperations = 4;
         for (int i = 0; i < init; i++) {
             IntegerTestEntity test = this.createRandomObject();
             tree.insert(test);
@@ -168,22 +167,39 @@ public class KDTreeTestInteger {
                     tree.insert(newEntity);
                     this.testEntities.add(newEntity);
                     continue;
-                case 1:
+                case 1: // delete
                     if (!testEntities.isEmpty()) {
-                        IntegerTestEntity toDelete = this.testEntities.get(rand.nextInt(this.testEntities.size()));
+                        IntegerTestEntity toDelete = this.testEntities.remove(rand.nextInt(this.testEntities.size()));
                         tree.delete(toDelete);
-                        this.testEntities.remove(toDelete);
-                        assertFalse(tree.find(toDelete).contains(toDelete));
+                        ArrayList<IntegerTestEntity> found = tree.find(toDelete);
+                        assertTrue(found == null || !found.contains(toDelete), "Test == deleted");
+                    } else {
+                        j--;
                     }
                     continue;
-
-                case 2:
+                case 2: // edit
                     if (!testEntities.isEmpty()) {
                         IntegerTestEntity toEdit = this.testEntities.remove(rand.nextInt(this.testEntities.size()));
                         IntegerTestEntity edited = this.createRandomObject();
                         tree.edit(toEdit, edited);
                         this.testEntities.add(edited);
-                        assertNotNull(tree.find(edited));
+
+                        ArrayList<IntegerTestEntity> found = this.tree.find(edited);
+
+                        assertNotNull(found);
+                        assertTrue(found.contains(edited), "Test == edited");
+                    } else {
+                        j--;
+                    }
+                    continue;
+                case 3:
+                    if (!testEntities.isEmpty()) {
+                        IntegerTestEntity test = this.getRandomObject();
+                        ArrayList<IntegerTestEntity> found = this.tree.find(test);
+
+                        assertTrue(found.contains(test), "Test == found");
+                    } else {
+                        j--;
                     }
                     continue;
             }

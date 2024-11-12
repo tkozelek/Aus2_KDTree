@@ -1,6 +1,6 @@
 package kozelek.tree;
 
-import kozelek.data.objekt.IObject;
+import kozelek.data.objekt.interfaces.IObject;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -39,6 +39,8 @@ public class KDTree<T extends IObject>  {
 
     public ArrayList<Node<T>> findNodes(T data) {
         Node<T> currentNode = root;
+        if (currentNode == null)
+            return null;
         ArrayList<Node<T>> found = new ArrayList<>();
         if (currentNode.equals(data)) {
             found.add(currentNode);
@@ -107,7 +109,7 @@ public class KDTree<T extends IObject>  {
         return boundObject;
     }
 
-    public ArrayList<Node<T>> deleteNode(Node<T> nodeToDelete) {
+    private ArrayList<Node<T>> deleteNode(Node<T> nodeToDelete) {
         if (nodeToDelete.isLeaf()) { // je listom
             if (nodeToDelete.equals(this.root))
                 this.root = null;

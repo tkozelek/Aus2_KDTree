@@ -9,34 +9,32 @@ import kozelek.data.Parcela;
 import javax.swing.*;
 
 public class AddController {
-    private AddWindow addView;
+    private AddWindow view;
     private Wrapper wrapper;
-    private MainController mainController;
 
-    public AddController(AddWindow addView, Wrapper wrapper, MainController mainController) {
-        this.addView = addView;
+    public AddController(AddWindow addView, Wrapper wrapper) {
+        this.view = addView;
         this.wrapper = wrapper;
-        this.mainController = mainController;
 
         addView.getSubmitAddButton().addActionListener(e -> handleSave());
         addView.getBackButton().addActionListener(e -> goBack());
     }
 
     private void goBack() {
-        this.addView.dispose();
+        this.view.dispose();
     }
 
     private void handleSave() {
         try {
-            int id = Integer.parseInt(addView.getCisloField().getText());
-            String desc = addView.getDescField().getText();
-            double x1 = Double.parseDouble(addView.getX1Field().getText());
-            double x2 = Double.parseDouble(addView.getX2Field().getText());
-            double y1 = Double.parseDouble(addView.getY1Field().getText());
-            double y2 = Double.parseDouble(addView.getY2Field().getText());
+            int id = Integer.parseInt(view.getCisloField().getText());
+            String desc = view.getDescField().getText();
+            double x1 = Double.parseDouble(view.getX1Field().getText());
+            double x2 = Double.parseDouble(view.getX2Field().getText());
+            double y1 = Double.parseDouble(view.getY1Field().getText());
+            double y2 = Double.parseDouble(view.getY2Field().getText());
 
 
-            if (addView.getJeNehnutelnostRadio().isSelected()) {
+            if (view.getJeNehnutelnostRadio().isSelected()) {
                 Nehnutelnost neh1 = new Nehnutelnost(id, desc, new GPS(x1, y1));
                 Nehnutelnost neh2 = new Nehnutelnost(id, desc, new GPS(x2, y2));
 
@@ -47,10 +45,10 @@ public class AddController {
 
                 wrapper.vlozParcelu(par1, par2);
             }
-            JOptionPane.showMessageDialog(this.addView,
+            JOptionPane.showMessageDialog(this.view,
                     "Success.");
         } catch (NumberFormatException ex) {
-            addView.showError("Invalid GPS coordinates");
+            view.showError("Invalid GPS coordinates");
         }
     }
 }

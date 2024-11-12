@@ -5,7 +5,8 @@ import kozelek.data.Nehnutelnost;
 import kozelek.data.Parcela;
 import kozelek.data.objekt.Entity;
 import kozelek.data.objekt.GPSObjekt;
-import kozelek.data.objekt.IObject;
+import kozelek.data.objekt.interfaces.IHasOther;
+import kozelek.data.objekt.interfaces.IObject;
 import kozelek.tree.KDTree;
 import kozelek.tree.Node;
 
@@ -202,7 +203,7 @@ public class Generator<T extends IObject> {
     public void editGPS(int pocetOperacii) {
         for (int i = 0; i < pocetOperacii; i++) {
             GPSObjekt random = (GPSObjekt) this.entities.remove(this.rand.nextInt(this.entities.size()));
-            GPSObjekt random2 = random.getOther();
+            GPSObjekt random2 = (GPSObjekt) random.getOther();
             this.entities.remove(random2);
 
             GPSObjekt neww = null;

@@ -3,13 +3,15 @@ package kozelek.data.objekt;
 import kozelek.data.GPS;
 import kozelek.data.Nehnutelnost;
 import kozelek.data.Parcela;
+import kozelek.data.objekt.interfaces.IHasOther;
+import kozelek.data.objekt.interfaces.IObject;
 
 import java.util.UUID;
 
-public class GPSObjekt implements IObject {
+public class GPSObjekt implements IObject, IHasOther {
     private Nehnutelnost nehnutelnost;
     private Parcela parcela;
-    private GPSObjekt other;
+    private IHasOther other;
 
     public GPSObjekt(Nehnutelnost nehnutelnost, Parcela parcela) {
         this.nehnutelnost = nehnutelnost;
@@ -25,11 +27,13 @@ public class GPSObjekt implements IObject {
         return parcela;
     }
 
-    public void setOther(GPSObjekt other) {
+    @Override
+    public void setOther(IHasOther other) {
         this.other = other;
     }
 
-    public GPSObjekt getOther() {
+    @Override
+    public IHasOther getOther() {
         return other;
     }
 
@@ -99,5 +103,10 @@ public class GPSObjekt implements IObject {
     @Override
     public int getDimension() {
         return 2;
+    }
+
+    @Override
+    public String toString() {
+        return this.getNehnutelnost() != null ? this.getNehnutelnost().toString() : this.getParcela().toString();
     }
 }

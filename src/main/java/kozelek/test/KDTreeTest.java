@@ -1,17 +1,14 @@
 package kozelek.test;
 
 import kozelek.data.GPS;
-import kozelek.data.Nehnutelnost;
 import kozelek.data.objekt.Entity;
-import kozelek.data.objekt.IComparator;
-import kozelek.data.objekt.IObject;
+import kozelek.data.objekt.interfaces.IObject;
 import kozelek.tree.KDTree;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,7 +29,7 @@ class KDTreeTest {
         this.x2 = 200;
         this.y1 = 0;
         this.y2 = 200;
-        this.pocet = 5000;
+        this.pocet = 20000;
         this.removepocet = 1500;
 
         this.tree = new KDTree<>();
@@ -145,8 +142,7 @@ class KDTreeTest {
 
             ArrayList<TestEntity> found = tree.find(test);
 
-            assertNull(found);
-            assertEquals(test, deleted, "Test == deleted");
+            assertTrue(!found.contains(test));
         }
 
         // remaining
@@ -160,8 +156,8 @@ class KDTreeTest {
 
     @Test
     void testRandomOperations() {
-        int init = 1000;
-        int numberOfRandomOperations = 3;
+        int init = 0;
+        int numberOfRandomOperations = 4;
         for (int i = 0; i < init; i++) {
             TestEntity test = this.createRandomObject();
             tree.insert(test);
@@ -177,37 +173,48 @@ class KDTreeTest {
                     tree.insert(newEntity);
                     this.testEntities.add(newEntity);
                     continue;
-                case 1:
+                case 1: // delete
                     if (!testEntities.isEmpty()) {
-                        TestEntity toDelete = this.testEntities.get(rand.nextInt(this.testEntities.size()));
+                        TestEntity toDelete = this.testEntities.remove(rand.nextInt(this.testEntities.size()));
                         tree.delete(toDelete);
-                        this.testEntities.remove(toDelete);
-                        assertNull(tree.find(toDelete));
+                        ArrayList<TestEntity> found = tree.find(toDelete);
+                        assertTrue(found == null || !found.contains(toDelete), "Test == deleted");
+                    } else {
+                        j--;
                     }
                     continue;
-
-                case 2:
+                case 2: // edit
                     if (!testEntities.isEmpty()) {
                         TestEntity toEdit = this.testEntities.remove(rand.nextInt(this.testEntities.size()));
                         TestEntity edited = this.createRandomObject();
                         tree.edit(toEdit, edited);
                         this.testEntities.add(edited);
-                        assertNotNull(tree.find(edited));
+
+                        ArrayList<TestEntity> found = this.tree.find(edited);
+
+                        assertNotNull(found);
+                        assertTrue(found.contains(edited), "Test == edited");
+                    } else {
+                        j--;
+                    }
+                    continue;
+                case 3:
+                    if (!testEntities.isEmpty()) {
+                        TestEntity test = this.getRandomObject();
+                        ArrayList<TestEntity> found = this.tree.find(test);
+
+                        assertTrue(found.contains(test), "Test == found");
+                    } else {
+                        j--;
                     }
                     continue;
             }
-        }
-
-        for (TestEntity entity : this.testEntities) {
-            ArrayList<TestEntity> found = tree.find(entity);
-            assertNotNull(found);
-            assertTrue(found.contains(entity));
         }
     }
 
     static class TestEntity extends Entity implements IObject {
         public TestEntity(GPS gps) {
-            super(gps);
+            super(gps, 0, "a");
         }
 
         @Override

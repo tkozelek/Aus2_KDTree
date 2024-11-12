@@ -17,6 +17,8 @@ public class MainWindow extends JFrame {
     private JTextField y2Field;
     private JButton deleteButton;
     private JPanel panel1;
+    private JTextField csvField;
+    private JButton importButton;
 
     public MainWindow() {
         add(panel1);
@@ -75,6 +77,14 @@ public class MainWindow extends JFrame {
 
     public JButton getDeleteButton() {
         return deleteButton;
+    }
+
+    public JTextField getCsvField() {
+        return csvField;
+    }
+
+    public JButton getImportButton() {
+        return importButton;
     }
 
     public void showError(String message) {

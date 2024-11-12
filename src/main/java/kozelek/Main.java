@@ -7,10 +7,10 @@ import kozelek.data.GPS;
 import kozelek.data.Nehnutelnost;
 import kozelek.data.Parcela;
 import kozelek.data.objekt.GPSObjekt;
+import kozelek.data.objekt.interfaces.IObject;
 import kozelek.generator.Generator;
 import kozelek.generator.TestClass;
 import kozelek.tree.KDTree;
-import kozelek.tree.Node;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -20,11 +20,11 @@ public class Main {
     public static void main(String[] args) {
         KDTree<Nehnutelnost> treeNehnutelnost = new KDTree<>();
         KDTree<Parcela> treeParcela = new KDTree<>();
-//        KDTree<GPSObjekt> treeAll = new KDTree<>();
-//        Wrapper wrapper = new Wrapper(treeNehnutelnost, treeParcela, treeAll);
-//
-//        MainWindow mw = new MainWindow();
-//        MainController mc = new MainController(wrapper, mw);
+        KDTree<GPSObjekt> treeAll = new KDTree<>();
+        Wrapper wrapper = new Wrapper(treeNehnutelnost, treeParcela, treeAll);
+
+        MainWindow mw = new MainWindow();
+        MainController<IObject> mc = new MainController<>(wrapper, mw);
 
 //        wrapper.importCsv("neh.csv", Nehnutelnost.class);
 //        wrapper.importCsv("par.csv", Parcela.class);
@@ -33,24 +33,24 @@ public class Main {
 //        System.out.println(wrapper.getNehnutelnostiLevelOrder().size());
 //        System.out.println(wrapper.getVsetkyLevelOrder().size());
 
-        int pocetDelete = 10000;
-
-        for (int i = 1000; i < 10000+1; i++) {
-            KDTree<Nehnutelnost> tree = new KDTree<>();
-            Generator<Nehnutelnost> gen = new Generator<>(tree, 1000,1000, 0,0);
-
-            gen.setSeed(i);
-
-            gen.generujData(0, 20000, Nehnutelnost.class, 0.2);
-
-            int a = gen.vymaz(pocetDelete);
-            int b = gen.getLevelOrder().size();
-            int c = gen.vyhladaj(10000);
-
-
-            System.out.printf("%d %d %d\n", a, b, c);
-            gen.clear();
-        }
+//        int pocetDelete = 10000;
+//
+//        for (int i = 1000; i < 10000+1; i++) {
+//            KDTree<Nehnutelnost> tree = new KDTree<>();
+//            Generator<Nehnutelnost> gen = new Generator<>(tree, 1000,1000, 0,0);
+//
+//            gen.setSeed(i);
+//
+//            gen.generujData(0, 20000, Nehnutelnost.class, 0.2);
+//
+//            int a = gen.vymaz(pocetDelete);
+//            int b = gen.getLevelOrder().size();
+//            int c = gen.vyhladaj(10000);
+//
+//
+//            System.out.printf("%d %d %d\n", a, b, c);
+//            gen.clear();
+//        }
 
 
 

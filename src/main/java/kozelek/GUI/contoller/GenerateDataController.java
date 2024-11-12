@@ -12,7 +12,6 @@ import javax.swing.*;
 public class GenerateDataController {
     private GenerateDataView view;
     private Wrapper wrapper;
-    private MainController mainController;
 
     private double x1,x2;
     private double y1,y2;
@@ -20,10 +19,9 @@ public class GenerateDataController {
     private int countNehnutelnost, countParcela;
     private double duplicateNehnutelnost, duplicateParcela;
 
-    public GenerateDataController(GenerateDataView addView, Wrapper wrapper, MainController mainController) {
+    public GenerateDataController(GenerateDataView addView, Wrapper wrapper) {
         this.view = addView;
         this.wrapper = wrapper;
-        this.mainController = mainController;
 
         view.getGoBackButton().addActionListener(e -> goBack());
         view.getGenerateButton().addActionListener(e -> generate());
@@ -31,8 +29,7 @@ public class GenerateDataController {
 
     private void generate() {
         if (this.spracujVstupy()) {
-            this.wrapper.generujAVlozNehnutelnosti(this.startAtNehnutelnost, this.countNehnutelnost, this.duplicateNehnutelnost);
-            this.wrapper.generujAVlozParcely(this.startAtParcela, this.countParcela, this.duplicateParcela);
+            this.wrapper.generujAVlozObe(this.startAtNehnutelnost, countNehnutelnost, startAtParcela, countParcela, duplicateNehnutelnost, duplicateParcela);
             JOptionPane.showMessageDialog(this.view,
                     "Success.");
         }

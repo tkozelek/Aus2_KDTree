@@ -1,35 +1,26 @@
 package kozelek.data;
 
 import kozelek.data.objekt.*;
+import kozelek.data.objekt.interfaces.IObject;
+import kozelek.data.objekt.interfaces.ISave;
 
 import java.util.ArrayList;
 
 public class Nehnutelnost extends Entity implements IObject, ISave {
 
     private ArrayList<Parcela> parcely;
-    private int id;
-    private String description;
     public static final String startingString = "Neh";
 
     public Nehnutelnost(int id, String description, GPS gps) {
-        super(gps);
-        this.id = id;
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getId() {
-        return id;
+        super(gps, id, description);
+        this.parcely = new ArrayList<>();
     }
 
     @Override
     public String toString() {
         return "Nehnutelnost " +
-                "id=" + this.id +
-                ", description='" + this.description + '\'' +
+                "id=" + this.getId() +
+                ", description='" + this.getDescription() + '\'' +
                 " x = " + this.getGPS();
     }
 
@@ -39,6 +30,10 @@ public class Nehnutelnost extends Entity implements IObject, ISave {
 
     public void addParcela(Parcela parcela) {
         this.parcely.add(parcela);
+    }
+
+    public void removeParcela(Parcela parcela) {
+        this.parcely.remove(parcela);
     }
 
     @Override
@@ -78,8 +73,8 @@ public class Nehnutelnost extends Entity implements IObject, ISave {
     @Override
     public String toCsvString() {
         Nehnutelnost other = (Nehnutelnost) this.getOther();
-        return  this.id + Entity.CSV_DELIMITER +
-                this.description + Entity.CSV_DELIMITER +  // .replace(",", ";") ak by sme do popisu vkladali čiarky :)
+        return  this.getId() + Entity.CSV_DELIMITER +
+                this.getDescription() + Entity.CSV_DELIMITER +  // .replace(",", ";") ak by sme do popisu vkladali čiarky :)
                 this.getGPS().toCsvString() + Entity.CSV_DELIMITER +
                 this.getUuid().toString() + Entity.CSV_DELIMITER +
                 other.getGPS().toCsvString() + Entity.CSV_DELIMITER +
