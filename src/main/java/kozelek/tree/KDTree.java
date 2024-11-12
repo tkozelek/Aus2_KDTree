@@ -247,6 +247,9 @@ public class KDTree<T extends IObject>  {
     public ArrayList<Node<T>> levelOrder(Node<T> startNode) {
         ArrayList<Node<T>> found = new ArrayList<>();
         Stack<Node<T>> stack = new Stack<>();
+        if (startNode == null) {
+            return found;
+        }
         stack.push(startNode);
 
         while (!stack.isEmpty()) {

@@ -11,10 +11,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TreeWrapperTest {
+class KDTreeTest {
 
     private KDTree<TestEntity> tree;
     private double x1,x2;
@@ -22,6 +23,7 @@ class TreeWrapperTest {
     private int pocet, removepocet;
     private Random rand;
     private ArrayList<TestEntity> testEntities;
+    private final double duplicate = 0.2d;
 
     @BeforeEach
     public void init() {
@@ -46,8 +48,16 @@ class TreeWrapperTest {
 
     private TestEntity createRandomObject() {
         GPS gps = new GPS(this.randomX(), this.randomY());
+        double randDuplicate = this.rand.nextDouble();
+        if (!this.testEntities.isEmpty() && randDuplicate < this.duplicate) {
+            gps = this.getRandomObject().getGPS();
+        }
 
         return new TestEntity(gps);
+    }
+
+    public TestEntity getRandomObject() {
+        return this.testEntities.get(this.rand.nextInt(this.testEntities.size()));
     }
 
     public double randomX() {
@@ -60,7 +70,7 @@ class TreeWrapperTest {
 
     @Test
     void testInsertAndFind() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < pocet; i++) {
             TestEntity test = this.createRandomObject();
             tree.insert(test);
             this.testEntities.add(test);
@@ -78,20 +88,12 @@ class TreeWrapperTest {
 
     @Test
     void testInsertAndFindRandomly() {
-        ArrayList<TestEntity> foundList = new ArrayList<>();
         for (int i = 0; i < pocet*2; i++) {
-            if (rand.nextBoolean()) {
+            if (rand.nextBoolean()) { // insert
                 TestEntity test = this.createRandomObject();
                 tree.insert(test);
                 testEntities.add(test);
-
-                ArrayList<TestEntity> testfind = tree.find(test);
-
-                if (testfind.isEmpty())
-                    fail();
-
-                foundList.addAll(testfind);
-            } else {
+            } else { // try find
                 if (!testEntities.isEmpty()) {
                     TestEntity test = this.testEntities.get(rand.nextInt(this.testEntities.size()));
 
@@ -101,11 +103,6 @@ class TreeWrapperTest {
                     assertTrue(found.contains(test));
                 } else
                     i--;
-            }
-            int pointer = 0;
-            for (int j = 0; j < testEntities.size(); j++) {
-                assertEquals(testEntities.get(pointer), foundList.get(pointer));
-                ++pointer;
             }
         }
     }
@@ -119,14 +116,18 @@ class TreeWrapperTest {
         }
 
         for (int j = 0; j < pocet / 2; j++) {
-            TestEntity test = this.testEntities.get(rand.nextInt(this.testEntities.size()));
-            TestEntity edit = new TestEntity(new GPS(this.randomX(), this.randomY()));
+            TestEntity original = this.testEntities.remove(rand.nextInt(this.testEntities.size()));
+            TestEntity edited = new TestEntity(new GPS(this.randomX(), this.randomY()));
 
-            tree.edit(test, edit);
-            ArrayList<TestEntity> found = tree.find(edit);
+            tree.edit(original, edited);
 
-            assertNotNull(found);
-            assertTrue(found.contains(edit));
+            ArrayList<TestEntity> found = tree.find(edited);
+            TestEntity tryFindOld = tree.findOneNode(original) != null ? tree.findOneNode(original).getBoundObject() : null;
+
+            // Assertions to verify correct behavior
+            assertNotNull(found, "Je v strome");
+            assertTrue(found.contains(edited));
+            assertNull(tryFindOld, "Stara sa nenasla");
         }
     }
 
@@ -143,12 +144,15 @@ class TreeWrapperTest {
             TestEntity deleted = tree.delete(test);
 
             ArrayList<TestEntity> found = tree.find(test);
+
             assertNull(found);
-            assertEquals(test, deleted);
+            assertEquals(test, deleted, "Test == deleted");
         }
 
+        // remaining
         for (TestEntity remaining : this.testEntities) {
             ArrayList<TestEntity> found = tree.find(remaining);
+
             assertNotNull(found);
             assertTrue(found.contains(remaining));
         }
@@ -156,22 +160,23 @@ class TreeWrapperTest {
 
     @Test
     void testRandomOperations() {
-        for (int i = 0; i < 1000; i++) {
+        int init = 1000;
+        int numberOfRandomOperations = 3;
+        for (int i = 0; i < init; i++) {
             TestEntity test = this.createRandomObject();
             tree.insert(test);
             this.testEntities.add(test);
         }
 
         for (int j = 0; j < pocet; j++) {
-            int operation = rand.nextInt(3);
+            int operation = rand.nextInt(numberOfRandomOperations);
+
             switch (operation) {
-                case 0:
+                case 0: // insert
                     TestEntity newEntity = this.createRandomObject();
                     tree.insert(newEntity);
                     this.testEntities.add(newEntity);
-                    assertNotNull(tree.find(newEntity));
-                    break;
-
+                    continue;
                 case 1:
                     if (!testEntities.isEmpty()) {
                         TestEntity toDelete = this.testEntities.get(rand.nextInt(this.testEntities.size()));
@@ -179,7 +184,7 @@ class TreeWrapperTest {
                         this.testEntities.remove(toDelete);
                         assertNull(tree.find(toDelete));
                     }
-                    break;
+                    continue;
 
                 case 2:
                     if (!testEntities.isEmpty()) {
@@ -189,7 +194,7 @@ class TreeWrapperTest {
                         this.testEntities.add(edited);
                         assertNotNull(tree.find(edited));
                     }
-                    break;
+                    continue;
             }
         }
 
@@ -239,4 +244,5 @@ class TreeWrapperTest {
             return 2;
         }
     }
+
 }

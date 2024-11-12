@@ -33,7 +33,7 @@ public class Main {
 //        System.out.println(wrapper.getNehnutelnostiLevelOrder().size());
 //        System.out.println(wrapper.getVsetkyLevelOrder().size());
 
-        int pocetDelete = 7500;
+        int pocetDelete = 10000;
 
         for (int i = 1000; i < 10000+1; i++) {
             KDTree<Nehnutelnost> tree = new KDTree<>();
@@ -41,19 +41,14 @@ public class Main {
 
             gen.setSeed(i);
 
-            gen.generujData(0, 10000, Nehnutelnost.class, 0.2);
+            gen.generujData(0, 20000, Nehnutelnost.class, 0.2);
 
             int a = gen.vymaz(pocetDelete);
-
-            gen.generujData(0, 15000, Nehnutelnost.class, 0.2);
-
-            a = gen.vymaz(pocetDelete);
             int b = gen.getLevelOrder().size();
+            int c = gen.vyhladaj(10000);
 
-            System.out.println(gen.vyhladaj(5000));
 
-            System.out.println(b);
-
+            System.out.printf("%d %d %d\n", a, b, c);
             gen.clear();
         }
 
