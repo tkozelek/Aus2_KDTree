@@ -197,8 +197,15 @@ public class MainController<T extends IObject> {
     private void findAll() {
         if (this.spracujVstupy()) {
             ArrayList<GPSObjekt> gpsobjects = this.wrapper.vyhladajVsetky(new GPS(x1, y1), new GPS(x2,y2));
-            if (gpsobjects != null) {
-                ArrayList<IObject> objects = new ArrayList<>(gpsobjects);
+            ArrayList<IObject> objects = new ArrayList<>();
+            for (GPSObjekt obj : gpsobjects) {
+                if (obj.getNehnutelnost() != null) {
+                    objects.add(obj.getNehnutelnost());
+                } else {
+                    objects.add(obj.getParcela());
+                }
+            }
+            if (!objects.isEmpty()) {
                 updateList(objects);
             } else {
                 JOptionPane.showMessageDialog(this.view,

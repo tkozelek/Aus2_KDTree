@@ -430,6 +430,7 @@ public class Wrapper {
         }
     }
 
+
     public void setOtherAndInsertNehnutelnost(Nehnutelnost neh, Nehnutelnost other) {
         Node<Nehnutelnost> found = this.nehnutelnosti.findOneNode(other);
         Nehnutelnost n = null;

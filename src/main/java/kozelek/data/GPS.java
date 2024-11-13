@@ -30,7 +30,8 @@ public class GPS {
 
     @Override
     public String toString() {
-        return this.x + ", " + this.y;
+        return this.pozX + " " + this.x +
+                ", " + this.pozY + " " + this.y;
     }
 
 
