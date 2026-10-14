@@ -11,9 +11,9 @@ from scratch in Java, used to find properties and land parcels by GPS position, 
   taken out and inserted again.
 - Three trees side by side: properties, parcels, and both together, so a search by GPS returns
   everything at that position, and a property and a parcel on the same point reference each other.
-- A random data generator, randomised tests against a reference list, and saving and loading to CSV.
+- A random data generator and saving and loading to CSV.
 
 ## Run it
 
 Open the project in IntelliJ IDEA and run `kozelek.Main` (the GUI uses IntelliJ GUI Designer forms).
-Java 23, Maven. The randomised tests are in `src/main/java/kozelek/test`.
+Java 23, Maven.
